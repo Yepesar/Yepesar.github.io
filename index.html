@@ -310,7 +310,7 @@ section{padding-block:clamp(80px, 11vw, 150px); border-top:1px solid var(--rule)
 .linkish{background:none; border:0; padding:0; font:inherit; color:var(--flame); text-decoration:underline; text-underline-offset:.22em; cursor:pointer}
 .linkish[hidden]{display:none}
 /* progress pill */
-.forge-hud{display:none!important;
+.forge-hud{
   position:fixed; z-index:45; left:max(16px, env(safe-area-inset-left,0px)); bottom:max(16px, env(safe-area-inset-bottom,0px));
   display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:999px; border:1px solid var(--rule);
   background:color-mix(in srgb, var(--soot) 92%, transparent); color:var(--ash); font:500 .86rem/1 var(--body);
@@ -401,94 +401,6 @@ footer{
 .contact-line{margin-top:14px; color:var(--ash-dim)}
 .foot-links{display:flex; flex-wrap:wrap; gap:10px; margin-top:36px}
 .colophon{margin-top:72px; padding-top:22px; border-top:1px solid var(--rule); font-size:.82rem; color:var(--ash-faint); display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap}
-
-/* ================= Run layer: rooms, quests, achievements =================
-   Nothing is hidden. Unvisited rooms show their heading in cool steel; on
-   arrival it ignites. A mini-map, a quest chain and achievements ride on top. */
-html.run-on .room:not(.lit) h2{color:var(--steel)}
-.room h2{transition:color .9s ease, text-shadow 1.6s ease}
-.room.igniting h2{color:var(--h5); text-shadow:0 0 34px color-mix(in srgb, var(--h3) 70%, transparent), 0 0 4px color-mix(in srgb, var(--h4) 60%, transparent)}
-@media (prefers-reduced-motion:reduce){ .room h2{transition:none} .room.igniting h2{text-shadow:none} }
-.speed-link{margin-top:14px; display:inline-flex; align-items:center; gap:10px; font-size:.9rem; color:var(--ash-dim)}
-.speed-link button{background:none; border:0; padding:0; font:inherit; color:var(--steel); text-decoration:underline; text-underline-offset:.22em; cursor:pointer}
-
-.run-hud{
-  position:fixed; z-index:50; left:max(12px, env(safe-area-inset-left,0px)); right:max(12px, env(safe-area-inset-right,0px));
-  bottom:max(12px, env(safe-area-inset-bottom,0px)); display:flex; justify-content:flex-start; pointer-events:none;
-}
-.run-bar{
-  pointer-events:auto; display:flex; align-items:center; gap:6px; max-width:100%; padding:5px; border-radius:10px;
-  background:color-mix(in srgb, var(--soot) 93%, transparent); border:1px solid var(--rule);
-  box-shadow:0 14px 34px -14px rgba(0,0,0,.9); font:500 .86rem/1.2 var(--body); color:var(--ash);
-}
-.map{display:flex; gap:3px; padding:8px 8px 8px 6px; border-radius:7px; border:0; background:transparent; cursor:pointer}
-.map i{width:9px; height:14px; border-radius:1px; background:var(--soot-3); position:relative; transition:background-color .4s ease, box-shadow .4s ease}
-.map i.lit{background:var(--h3); box-shadow:0 0 8px color-mix(in srgb,var(--h3) 60%,transparent)}
-.map i.here{outline:1px solid var(--ash); outline-offset:1px}
-.map i.next:not(.lit){animation:beckon 1.4s ease-in-out infinite}
-@keyframes beckon{50%{background:color-mix(in srgb, var(--steel) 70%, var(--soot-3))}}
-@media (prefers-reduced-motion:reduce){ .map i.next:not(.lit){animation:none; background:var(--steel-dim)} }
-.quest{display:flex; align-items:center; gap:8px; min-width:0; border:0; background:transparent; color:var(--ash); font:inherit; cursor:pointer; padding:8px 10px; border-radius:7px; text-align:left}
-.quest .q{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:34ch}
-.quest .k{color:var(--flame); flex:none}
-.quest .timer{font-variant-numeric:tabular-nums; color:var(--steel)}
-.ach-btn{display:flex; align-items:center; gap:8px; border:0; border-left:1px solid var(--rule); background:transparent; color:var(--ash); font:inherit; padding:8px 12px; cursor:pointer; border-radius:0 7px 7px 0; font-variant-numeric:tabular-nums; flex:none}
-.run-bar button{transition:background-color .2s ease, transform .16s var(--ease-out)}
-.run-bar button:active{transform:scale(.97)}
-@media (hover:hover){ .run-bar button:hover{background:var(--soot-3)} }
-@media (max-width:560px){ .quest .q{max-width:none} .quest .qd{display:none} .run-bar{width:100%} .quest{flex:1} .ach-btn .lbl{display:none} .map{padding-inline:4px} .map i{width:7px} }
-
-.run-panel{
-  position:fixed; z-index:51; left:max(12px, env(safe-area-inset-left,0px)); bottom:calc(max(12px, env(safe-area-inset-bottom,0px)) + 64px);
-  width:min(400px, calc(100vw - 24px)); max-height:min(72vh, 620px); overflow:auto; overscroll-behavior:contain;
-  background:var(--soot-2); border:1px solid var(--rule); border-radius:10px; padding:18px 18px 14px;
-  box-shadow:0 26px 70px -24px rgba(0,0,0,.95); transform-origin:bottom left;
-  transition:opacity .2s ease, transform .24s var(--ease-out);
-}
-.run-panel[hidden]{display:block!important; opacity:0; transform:scale(.97) translateY(8px); visibility:hidden; pointer-events:none; transition:opacity .14s ease, transform .14s ease, visibility 0s .14s}
-.run-panel h3{font-size:1.5rem}
-.run-panel .lead{font-size:.86rem; color:var(--ash-faint); margin:4px 0 14px}
-.run-actions{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px}
-.run-actions .btn{padding:10px 14px; font-size:.88rem}
-.rooms{list-style:none; margin:10px 0 4px; padding:0; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px}
-.rooms li button{width:100%; display:flex; align-items:center; gap:8px; padding:8px; border-radius:5px; border:1px solid var(--rule); background:transparent; color:var(--ash-dim); font:inherit; font-size:.8rem; cursor:pointer; text-align:left}
-.rooms li button i{width:7px; height:10px; background:var(--soot-3); flex:none}
-.rooms li.lit button{color:var(--ash)}
-.rooms li.lit button i{background:var(--h3)}
-.ach-group{margin-top:14px; font-size:.78rem; color:var(--ash-faint)}
-.achs{list-style:none; margin:6px 0 0; padding:0}
-.achs li{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:1px 12px; padding:10px 0; border-top:1px solid var(--rule)}
-.achs li .px{margin-top:.5em; background:var(--soot-3); box-shadow:none}
-.achs li.got .px{background:var(--h4); box-shadow:0 0 10px 1px color-mix(in srgb,var(--h3) 70%,transparent)}
-.achs li b{font-weight:500; font-size:.94rem}
-.achs li span{grid-column:2; font-size:.82rem; color:var(--ash-faint)}
-.achs li em{font-style:normal; font-size:.78rem; color:var(--ash-faint)}
-.achs li.got em{color:var(--flame)}
-.achs li.secret:not(.got) b{color:var(--ash-faint)}
-.reward{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px; padding:12px; border:1px solid var(--rule); border-radius:6px; font-size:.88rem}
-.reward[hidden]{display:none}
-.switch{position:relative; width:40px; height:22px; border-radius:999px; border:1px solid var(--rule); background:var(--soot-3); cursor:pointer; flex:none; padding:0}
-.switch::after{content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:var(--ash-dim); transition:transform .2s var(--ease-out), background-color .2s ease}
-.switch[aria-checked="true"]{background:#1c3550; border-color:#3f6e9e}
-.switch[aria-checked="true"]::after{transform:translateX(18px); background:#cfe6ff}
-.panel-foot{display:flex; justify-content:space-between; gap:10px; margin-top:12px; font-size:.8rem}
-.panel-foot button{background:none; border:0; padding:4px 0; color:var(--ash-faint); font:inherit; cursor:pointer; text-decoration:underline}
-
-.run-toast{
-  position:fixed; z-index:52; right:max(12px, env(safe-area-inset-right,0px)); bottom:calc(max(12px, env(safe-area-inset-bottom,0px)) + 64px);
-  width:min(330px, calc(100vw - 24px)); display:flex; gap:14px; align-items:center; padding:14px 16px; border-radius:8px;
-  background:var(--soot-2); border:1px solid color-mix(in srgb, var(--h3) 55%, transparent);
-  box-shadow:0 0 44px -12px color-mix(in srgb, var(--h3) 60%, transparent), 0 20px 40px -20px rgba(0,0,0,.85);
-  transition:opacity .32s var(--ease-out), transform .32s var(--ease-out);
-}
-.run-toast.out{opacity:0; transform:translateY(14px); pointer-events:none; transition:opacity .18s ease, transform .18s ease}
-.run-toast .px{width:14px; height:14px}
-.run-toast small{display:block; font-size:.76rem; color:var(--ash-faint)}
-.run-toast b{font-weight:500}
-@media (max-width:560px){ .run-toast{right:auto; left:max(12px, env(safe-area-inset-left,0px)); bottom:auto; top:calc(env(safe-area-inset-top,0px) + 100px)} .run-toast.out{transform:translateY(-14px)} }
-.rain{position:fixed; z-index:55; top:-10px; width:5px; height:5px; background:var(--h4); pointer-events:none; box-shadow:0 0 8px var(--h3)}
-footer{padding-bottom:110px}
-html.run-on .hero-inner{padding-bottom:calc(clamp(28px, 6vh, 56px) + 64px)}
 </style>
 </head>
 <body>
@@ -538,8 +450,7 @@ html.run-on .hero-inner{padding-bottom:calc(clamp(28px, 6vh, 56px) + 64px)}
           <a class="btn" href="https://www.linkedin.com/in/jose-david-yepes-arango-3232a4126/" target="_blank" rel="noopener">LinkedIn<svg class="i"><use href="#i-out"/></svg></a>
         </div>
       </div>
-      <p class="speed-link"><span data-i18n="run.recruiter">Short on time?</span> <button type="button" id="speed-hero" data-i18n="run.speedBtn">Recruiter speedrun</button></p>
-      <p class="hint" style="margin-top:18px"><span class="hint-in"><svg class="i"><use href="#i-hand"/></svg><span class="fine" data-i18n="hero.hint">Run your cursor through the embers</span><span class="touch" data-i18n="hero.hintTouch">Drag your finger through the embers</span></span></p>
+      <p class="hint" style="margin-top:28px"><span class="hint-in"><svg class="i"><use href="#i-hand"/></svg><span class="fine" data-i18n="hero.hint">Run your cursor through the embers</span><span class="touch" data-i18n="hero.hintTouch">Drag your finger through the embers</span></span></p>
     </div>
   </div>
 </header>
@@ -885,31 +796,6 @@ html.run-on .hero-inner{padding-bottom:calc(clamp(28px, 6vh, 56px) + 64px)}
 <button class="forge-hud" id="forge-hud" type="button" aria-label="Forged games"><span class="pips" id="forge-pips" aria-hidden="true"></span><span id="forge-count">0/9</span><span data-i18n="forge.hud" id="forge-hud-label">forged</span></button>
 <div class="forge-toast" id="forge-toast" hidden role="status" aria-live="polite"><i class="px"></i><div><small data-i18n="forge.toastSmall">Forge complete</small><span data-i18n="forge.toast">All 9 games forged. The embers of the name now burn white-hot.</span></div></div>
 
-
-<div class="run-hud" id="run-hud" aria-label="Run">
-  <div class="run-bar">
-    <button class="map" id="run-map" type="button" aria-label="Map"></button>
-    <button class="quest" id="run-quest" type="button"><span class="k" id="run-quest-k"></span><span class="q" id="run-quest-t"></span></button>
-    <button class="ach-btn" id="run-ach" type="button" aria-expanded="false" aria-controls="run-panel"><i class="px"></i><span id="run-ach-n">1/15</span><span class="lbl" id="run-ach-l"></span></button>
-  </div>
-</div>
-<div class="run-panel" id="run-panel" role="dialog" aria-labelledby="run-panel-h" hidden>
-  <h3 id="run-panel-h"></h3>
-  <p class="lead" id="run-panel-lead"></p>
-  <div class="run-actions">
-    <button class="btn btn-hot" type="button" id="run-speed"></button>
-    <button class="btn" type="button" id="run-share"></button>
-  </div>
-  <ul class="rooms" id="run-rooms"></ul>
-  <p class="ach-group" id="run-g1"></p>
-  <ul class="achs" id="run-achs"></ul>
-  <p class="ach-group" id="run-g2"></p>
-  <ul class="achs" id="run-secrets"></ul>
-  <div class="reward" id="run-reward" hidden><span id="run-reward-t"></span><button class="switch" type="button" role="switch" aria-checked="false" id="run-blue" aria-labelledby="run-reward-t"></button></div>
-  <div class="panel-foot"><span id="run-saved"></span><button type="button" id="run-reset"></button></div>
-</div>
-<div class="run-toast out" id="run-toast" role="status" aria-live="polite"><i class="px"></i><div><small id="run-toast-s"></small><b id="run-toast-t"></b></div></div>
-
 <script>
 var I18N = {
   en: {
@@ -973,7 +859,7 @@ var I18N = {
     "col3.h":"Production & AI", "col3.li1":"Claude Code, MCP workflows", "col3.li2":"Prompt engineering, LLM tooling", "col3.li3":"Git/GitHub, Jira, Trello, Figma", "col3.li4":"Scrum / Agile, team leadership", "col3.li5":"Living technical documentation",
     "footer.h2":"Let's build something playable.", "footer.cta":"Send an email",
     "footer.copy":"EmberBlast — Jose David Yepes Arango. Portfolio updated 2026.",
-    "run.recruiter":"Short on time?", "run.speedBtn":"Recruiter speedrun", "forge.hint":"Hold to forge", "forge.howto":"Each cover starts as cold iron. Press and hold one to heat it until it's forged.", "forge.all":"Reveal all covers",
+    "forge.hint":"Hold to forge", "forge.howto":"Each cover starts as cold iron. Press and hold one to heat it until it's forged.", "forge.all":"Reveal all covers",
     "forge.hud":"forged", "forge.hudDone":"Forge complete", "forge.toastSmall":"Forge complete", "forge.toast":"All 9 games forged. The embers of the name now burn white-hot."
   },
   es: {
@@ -1037,7 +923,7 @@ var I18N = {
     "col3.h":"Producción e IA", "col3.li1":"Claude Code, MCP workflows", "col3.li2":"Prompt engineering, tooling con LLMs", "col3.li3":"Git/GitHub, Jira, Trello, Figma", "col3.li4":"Scrum / Agile, liderazgo de equipo", "col3.li5":"Documentación técnica viva",
     "footer.h2":"¿Construimos algo jugable?", "footer.cta":"Escribir un correo",
     "footer.copy":"EmberBlast — Jose David Yepes Arango. Portafolio actualizado 2026.",
-    "run.recruiter":"¿Poco tiempo?", "run.speedBtn":"Speedrun de reclutador", "forge.hint":"Mantén para forjar", "forge.howto":"Cada portada empieza como hierro frío. Mantén una presionada para calentarla hasta forjarla.", "forge.all":"Revelar todas las portadas",
+    "forge.hint":"Mantén para forjar", "forge.howto":"Cada portada empieza como hierro frío. Mantén una presionada para calentarla hasta forjarla.", "forge.all":"Revelar todas las portadas",
     "forge.hud":"forjados", "forge.hudDone":"Forja completa", "forge.toastSmall":"Forja completa", "forge.toast":"Los 9 juegos están forjados. Las brasas del nombre ahora arden al blanco."
   }
 };
@@ -1102,7 +988,7 @@ function applyLang(lang){
 
   function complete(){
     if(window.forgeMaster) window.forgeMaster(true);
-    /* the run layer announces this */
+    toastEl.hidden = false; setTimeout(function(){ toastEl.hidden = true; }, 4200);
   }
   function setForged(g, i, fx){
     forged[i] = 1; g.classList.add('forged'); save();
@@ -1115,7 +1001,6 @@ function applyLang(lang){
       try{ navigator.vibrate && navigator.vibrate(18); }catch(e){}
     }
     renderHud();
-    document.dispatchEvent(new CustomEvent('eb:forged', {detail:{count:n(), total:total}}));
     if(fx && n() >= total) complete();
   }
   function sparks(el){
@@ -1182,286 +1067,6 @@ function applyLang(lang){
   renderHud();
 })();
 
-/* ================= Run layer =================
-   A quest chain over the real portfolio. Rooms are "discovered" when they have
-   been on screen long enough to be seen; "read" goals need real dwell time.
-   Skipping is a valid way to play: the recruiter speedrun reveals everything
-   and is itself an achievement. Progress lives in this browser only. */
-(function(){
-  var RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var T = {
-    en:{
-      rooms:{top:"The forge", "sobre-mi":"Profile", featured:"Case studies", juegos:"Armory", now:"Dabloons", experiencia:"Journey", habilidades:"Tools", mods:"Mods", contacto:"Contact"},
-      quests:["Light the forge","Meet the smith: read the profile","Read the scroll: the El Ritual case study","Inspect the armory: forge 3 game covers","Follow the journey: read the experience","Talk to the smith: reach out"],
-      questDone:"Run complete. Thanks for playing.",
-      a:{
-        lit:["Forge lit","You arrived. Every run starts with one."],
-        profile:["Meet the smith","Read the profile."],
-        scroll:["Scroll reader","Read both design case studies."],
-        appr:["Smith's apprentice","Forge 3 game covers."],
-        armory:["Master of the armory","Forge all 9 game covers."],
-        journey:["The long road","Read the experience timeline."],
-        cart:["Cartographer","Discover every room."],
-        contact:["First contact","Copy the email or open a contact link."],
-        speed:["Efficient recruiter","Finish the recruiter speedrun."],
-        master:["Master smith","Earn every listed achievement."],
-        stir:["Bellows","Stir the embers of the name."],
-        poly:["Polyglot","Switch the language."],
-        night:["Night smith","Visit the forge between midnight and 5 a.m."],
-        curious:["Curious","Tap the logo five times."],
-        konami:["Old code","Enter the code every gamer knows."]
-      },
-      secret:"Secret", hud:"achievements", panelH:"Your run", panelLead:"Everything on the page is open. This only tracks what you have found.",
-      speed:"Start speedrun", speedOn:"Speedrun running", share:"Copy my result", shared:"Copied", sharedSel:"Result selected",
-      g1:"Achievements", g2:"Secrets", saved:"Saved in this browser", reset:"New run", unlocked:"Achievement unlocked", room:"Room discovered",
-      reward:"Reward: blue flame for the name", speedDone:"Speedrun finished in", timer:"Speedrun", next:"Next",
-      shareHead:"Jose Yepes's forge", shareRooms:"Rooms", shareAch:"Achievements", hint:"Hint"
-    },
-    es:{
-      rooms:{top:"La forja", "sobre-mi":"Perfil", featured:"Casos", juegos:"Armería", now:"Dabloons", experiencia:"Trayectoria", habilidades:"Herramientas", mods:"Mods", contacto:"Contacto"},
-      quests:["Enciende la forja","Conoce al herrero: lee el perfil","Lee el pergamino: el caso de El Ritual","Inspecciona la armería: forja 3 portadas","Sigue la trayectoria: lee la experiencia","Habla con el herrero: escríbele"],
-      questDone:"Partida completa. Gracias por jugar.",
-      a:{
-        lit:["Forja encendida","Llegaste. Toda partida empieza con uno."],
-        profile:["Conoce al herrero","Lee el perfil."],
-        scroll:["Lector de pergaminos","Lee los dos casos de diseño."],
-        appr:["Aprendiz de herrero","Forja 3 portadas de juegos."],
-        armory:["Maestro de la armería","Forja las 9 portadas."],
-        journey:["El largo camino","Lee la trayectoria."],
-        cart:["Cartógrafo","Descubre todas las salas."],
-        contact:["Primer contacto","Copia el correo o abre un enlace de contacto."],
-        speed:["Reclutador eficiente","Termina el speedrun de reclutador."],
-        master:["Maestro forjador","Consigue todos los logros de la lista."],
-        stir:["Fuelle","Aviva las brasas del nombre."],
-        poly:["Políglota","Cambia el idioma."],
-        night:["Herrero nocturno","Visita la forja entre medianoche y las 5 a. m."],
-        curious:["Curioso","Toca el logo cinco veces."],
-        konami:["Código antiguo","Escribe el código que todo gamer conoce."]
-      },
-      secret:"Secreto", hud:"logros", panelH:"Tu partida", panelLead:"Todo el portafolio está abierto. Esto solo registra lo que has encontrado.",
-      speed:"Iniciar speedrun", speedOn:"Speedrun en curso", share:"Copiar mi resultado", shared:"Copiado", sharedSel:"Resultado seleccionado",
-      g1:"Logros", g2:"Secretos", saved:"Guardado en este navegador", reset:"Partida nueva", unlocked:"Logro desbloqueado", room:"Sala descubierta",
-      reward:"Recompensa: llama azul para el nombre", speedDone:"Speedrun terminado en", timer:"Speedrun", next:"Siguiente",
-      shareHead:"La forja de Jose Yepes", shareRooms:"Salas", shareAch:"Logros", hint:"Pista"
-    }
-  };
-  var LISTED = ['lit','profile','scroll','appr','armory','journey','cart','contact','speed','master'];
-  var SECRETS = ['stir','poly','night','curious','konami'];
-  var ROOM_IDS = ['top','sobre-mi','featured','juegos','now','experiencia','habilidades','mods','contacto'];
-  /* quest i -> room to point at, and the achievement that completes it */
-  var QUESTS = [['top','lit'],['sobre-mi','profile'],['featured','scroll'],['juegos','appr'],['experiencia','journey'],['contacto','contact']];
-
-  var KEY = 'eb_run';
-  var S = {rooms:{}, got:{}, dwell:{}, speed:null, best:null};
-  try{ var o = JSON.parse(localStorage.getItem(KEY) || 'null'); if(o && typeof o === 'object'){ S.rooms = o.rooms || {}; S.got = o.got || {}; S.dwell = o.dwell || {}; S.best = o.best || null; } }catch(e){}
-  function save(){ try{ localStorage.setItem(KEY, JSON.stringify({rooms:S.rooms, got:S.got, dwell:S.dwell, best:S.best})); }catch(e){} }
-  function L(){ return T[document.documentElement.lang === 'es' ? 'es' : 'en']; }
-  var $ = function(id){ return document.getElementById(id); };
-
-  document.documentElement.classList.add('run-on');
-  var rooms = ROOM_IDS.map(function(id){ var el = document.getElementById(id); if(el) el.classList.add('room'); return el; });
-
-  /* ---------- toasts: one at a time, spaced ---------- */
-  var q = [], busy = false;
-  function toast(small, big){
-    q.push([small, big]); if(busy) return;
-    (function next(){
-      var m = q.shift(); if(!m){ busy = false; return; }
-      busy = true; $('run-toast-s').textContent = m[0]; $('run-toast-t').textContent = m[1];
-      $('run-toast').classList.remove('out');
-      setTimeout(function(){ $('run-toast').classList.add('out'); setTimeout(next, 420); }, 2600);
-    })();
-  }
-
-  function unlock(id){
-    if(S.got[id]) return;
-    S.got[id] = Date.now(); save();
-    toast(L().unlocked, L().a[id][0]);
-    if(id !== 'master' && LISTED.every(function(k){ return k === 'master' || S.got[k]; })) unlock('master');
-    render();
-  }
-
-  /* ---------- rooms: discovered after ~0.8s genuinely on screen ---------- */
-  function light(i, quiet){
-    var id = ROOM_IDS[i]; if(S.rooms[id]) return;
-    S.rooms[id] = 1; save();
-    var el = rooms[i];
-    if(el){ el.classList.add('lit'); if(!quiet && !RM){ el.classList.add('igniting'); setTimeout(function(){ el.classList.remove('igniting'); }, 900); } }
-    if(ROOM_IDS.every(function(r){ return S.rooms[r]; })) unlock('cart');
-    render();
-  }
-  rooms.forEach(function(el, i){ if(el && S.rooms[ROOM_IDS[i]]) el.classList.add('lit'); });
-
-  var vis = {}, here = 0;
-  if('IntersectionObserver' in window){
-    var th = []; for(var k=0;k<=20;k++) th.push(k/20);
-    var io = new IntersectionObserver(function(es){
-      es.forEach(function(e){
-        var i = rooms.indexOf(e.target), vh = window.innerHeight || 800;
-        var need = Math.min(vh*.4, e.boundingClientRect.height*.6);
-        vis[i] = e.isIntersecting && e.intersectionRect.height >= need;
-      });
-    }, {threshold:th});
-    rooms.forEach(function(el){ if(el) io.observe(el); });
-  }
-  /* dwell clock: rooms on screen accrue time; reading goals need real seconds */
-  var READ = {'sobre-mi':4, featured:7, experiencia:6};
-  var seen = {};
-  setInterval(function(){
-    if(document.hidden) return;
-    var best = -1, bestH = 0;
-    for(var i=0;i<rooms.length;i++){
-      if(!vis[i] || !rooms[i]) continue;
-      var id = ROOM_IDS[i];
-      seen[id] = (seen[id] || 0) + .25;
-      S.dwell[id] = (S.dwell[id] || 0) + .25;
-      if(seen[id] >= .8) light(i);
-      if(S.speed){ S.speed.v[id] = (S.speed.v[id] || 0) + .25; }
-      var r = rooms[i].getBoundingClientRect(), h = Math.min(r.bottom, innerHeight) - Math.max(r.top, 0);
-      if(h > bestH){ bestH = h; best = i; }
-      if(READ[id] && S.dwell[id] >= READ[id]){
-        if(id === 'sobre-mi') unlock('profile');
-        if(id === 'featured') unlock('scroll');
-        if(id === 'experiencia') unlock('journey');
-      }
-    }
-    if(S.speed && ROOM_IDS.every(function(r){ return r === 'top' || (S.speed.v[r] || 0) >= .5; })) finishSpeed();
-    if(best >= 0 && best !== here){ here = best; renderMap(); }
-    if(S.speed) $('run-quest-t').textContent = fmt(performance.now() - S.speed.t0) + ' · ' + ROOM_IDS.filter(function(r){ return r === 'top' || (S.speed.v[r] || 0) >= .5; }).length + '/9';
-  }, 250);
-  setInterval(save, 4000);
-
-  /* ---------- hooks into the page ---------- */
-  document.addEventListener('eb:stir', function(){ unlock('stir'); });
-  document.addEventListener('eb:forged', function(e){ var n = e.detail.count; if(n >= 3) unlock('appr'); if(n >= e.detail.total) unlock('armory'); });
-  try{ if(JSON.parse(localStorage.getItem('eb_forged') || '[]').length >= 3) S.got.appr = S.got.appr || Date.now(); }catch(e){}
-  document.querySelectorAll('.lang button').forEach(function(b){ b.addEventListener('click', function(){ setTimeout(function(){ unlock('poly'); render(); }, 0); }); });
-  document.querySelectorAll('a[href^="mailto:"], a[href*="linkedin.com"]').forEach(function(a){ a.addEventListener('click', function(){ unlock('contact'); }); });
-  document.addEventListener('copy', function(){ var t = String(getSelection()); if(t.indexOf('@') > -1) unlock('contact'); });
-  var h = new Date().getHours(); if(h < 5) setTimeout(function(){ unlock('night'); }, 2500);
-  var taps = 0, tapT = 0, brand = document.querySelector('.brand');
-  if(brand) brand.addEventListener('click', function(){ var now = Date.now(); taps = now - tapT < 900 ? taps + 1 : 1; tapT = now; if(taps >= 5) unlock('curious'); });
-  var KON = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'], kp = 0;
-  document.addEventListener('keydown', function(e){
-    var k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-    kp = k === KON[kp] ? kp + 1 : (k === KON[0] ? 1 : 0);
-    if(kp === KON.length){ kp = 0; unlock('konami'); rain(); }
-  });
-  function rain(){
-    if(RM) return;
-    for(var i=0;i<70;i++){
-      var d = document.createElement('i'); d.className = 'rain'; d.style.left = (Math.random()*100) + 'vw'; document.body.appendChild(d);
-      d.animate([{transform:'translateY(0)', opacity:1},{transform:'translateY('+(innerHeight+40)+'px) translateX('+((Math.random()-.5)*80)+'px)', opacity:.2}],
-        {duration:1400 + Math.random()*1400, delay:Math.random()*900, easing:'cubic-bezier(.55,0,.75,.4)', fill:'backwards'}).onfinish = (function(x){ return function(){ x.remove(); }; })(d);
-    }
-  }
-
-  /* ---------- recruiter speedrun ---------- */
-  function fmt(ms){ var s = Math.max(0, ms/1000), m = Math.floor(s/60); return m + ':' + ('0' + Math.floor(s%60)).slice(-2) + '.' + Math.floor((s*10)%10); }
-  function startSpeed(){
-    if(S.speed) return;
-    S.speed = {t0: performance.now(), v:{}};
-    var all = document.getElementById('forge-all'); if(all && !all.hidden) all.click();
-    rooms.forEach(function(el){ if(el) el.classList.add('lit'); });
-    /* rooms still count as visited only when the visitor scrolls through them */
-    setPanel(false); render();
-    var top = document.getElementById('sobre-mi'); if(top) top.scrollIntoView({behavior: RM ? 'auto' : 'smooth'});
-  }
-  function finishSpeed(){
-    var ms = performance.now() - S.speed.t0; S.speed = null;
-    if(!S.best || ms < S.best) S.best = ms;
-    save(); unlock('speed'); toast(L().speedDone, fmt(ms)); render();
-  }
-  $('speed-hero').addEventListener('click', startSpeed);
-  $('run-speed').addEventListener('click', startSpeed);
-
-  /* ---------- share card ---------- */
-  $('run-share').addEventListener('click', function(){
-    var l = L(), nR = ROOM_IDS.filter(function(r){ return S.rooms[r]; }).length;
-    var nA = LISTED.filter(function(k){ return S.got[k]; }).length + SECRETS.filter(function(k){ return S.got[k]; }).length;
-    var bar = ROOM_IDS.map(function(r){ return S.rooms[r] ? '🟧' : '⬛'; }).join('');
-    var txt = l.shareHead + ' 🔥\n' + bar + '\n' + l.shareRooms + ' ' + nR + '/9 · ' + l.shareAch + ' ' + nA + '/' + (LISTED.length + SECRETS.length) + (S.best ? ' · ⏱ ' + fmt(S.best) : '') + '\nyepesar.github.io';
-    var btn = $('run-share');
-    function done(t){ btn.textContent = t; setTimeout(function(){ btn.textContent = L().share; }, 1800); }
-    try{ navigator.clipboard.writeText(txt).then(function(){ done(l.shared); }, fallback); }catch(e){ fallback(); }
-    function fallback(){
-      var pre = $('run-share-text'); if(!pre){ pre = document.createElement('pre'); pre.id = 'run-share-text'; pre.style.cssText = 'white-space:pre-wrap;font:inherit;font-size:.84rem;margin:10px 0 0;color:var(--ash)'; btn.parentNode.after(pre); }
-      pre.textContent = txt; var r = document.createRange(); r.selectNodeContents(pre); var sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); done(l.sharedSel);
-    }
-  });
-
-  /* ---------- reward: blue flame after Cartographer ---------- */
-  var blueBtn = $('run-blue');
-  try{ blueBtn.setAttribute('aria-checked', localStorage.getItem('eb_flame') === 'blue' ? 'true' : 'false'); }catch(e){}
-  blueBtn.addEventListener('click', function(){
-    var on = blueBtn.getAttribute('aria-checked') !== 'true';
-    blueBtn.setAttribute('aria-checked', on ? 'true' : 'false');
-    if(window.forgePalette) window.forgePalette(on ? 'blue' : 'ember');
-  });
-
-  /* ---------- panel ---------- */
-  var panel = $('run-panel'), achBtn = $('run-ach');
-  function setPanel(open){ panel.hidden = !open; achBtn.setAttribute('aria-expanded', open ? 'true' : 'false'); if(open) render(); }
-  achBtn.addEventListener('click', function(e){ e.stopPropagation(); setPanel(panel.hidden); });
-  $('run-map').addEventListener('click', function(e){ e.stopPropagation(); setPanel(panel.hidden); });
-  document.addEventListener('click', function(e){ if(!panel.hidden && !panel.contains(e.target) && !e.target.closest('.run-bar')) setPanel(false); });
-  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') setPanel(false); });
-  $('run-rooms').addEventListener('click', function(e){
-    var b = e.target.closest('button[data-room]'); if(!b) return;
-    var el = document.getElementById(b.getAttribute('data-room')); setPanel(false);
-    if(el) el.scrollIntoView({behavior: RM ? 'auto' : 'smooth'});
-  });
-  $('run-quest').addEventListener('click', function(){
-    var qi = questIndex(); if(qi < 0) return;
-    var el = document.getElementById(QUESTS[qi][0]); if(el) el.scrollIntoView({behavior: RM ? 'auto' : 'smooth'});
-  });
-  $('run-reset').addEventListener('click', function(){
-    S = {rooms:{}, got:{lit:Date.now()}, dwell:{}, speed:null, best:null}; seen = {}; save();
-    try{ localStorage.removeItem('eb_forged'); }catch(e){}
-    rooms.forEach(function(el, i){ if(el && i > 0) el.classList.remove('lit'); });
-    S.rooms.top = 1; save(); setPanel(false); render();
-  });
-
-  function questIndex(){ for(var i=0;i<QUESTS.length;i++) if(!S.got[QUESTS[i][1]]) return i; return -1; }
-
-  function renderMap(){
-    var qi = questIndex(), nextRoom = qi >= 0 ? QUESTS[qi][0] : null, h = '';
-    ROOM_IDS.forEach(function(r, i){ h += '<i class="' + (S.rooms[r] ? 'lit ' : '') + (i === here ? 'here ' : '') + (r === nextRoom ? 'next' : '') + '"></i>'; });
-    $('run-map').innerHTML = h;
-  }
-  function render(){
-    var l = L();
-    renderMap();
-    var qi = questIndex();
-    if(S.speed){ $('run-quest-k').textContent = '⏱'; }
-    else if(qi < 0){ $('run-quest-k').textContent = ''; $('run-quest-t').textContent = l.questDone; }
-    else {
-      $('run-quest-k').textContent = l.next;
-      var parts = l.quests[qi].split(': ');
-      $('run-quest-t').innerHTML = '<span class="qt"></span><span class="qd"></span>';
-      $('run-quest-t').firstChild.textContent = parts[0]; $('run-quest-t').lastChild.textContent = parts[1] ? ': ' + parts[1] : '';
-    }
-    var all = LISTED.length + SECRETS.length;
-    var got = LISTED.concat(SECRETS).filter(function(k){ return S.got[k]; }).length;
-    $('run-ach-n').textContent = got + '/' + all; $('run-ach-l').textContent = l.hud;
-    if(panel.hidden) return;
-    $('run-panel-h').textContent = l.panelH; $('run-panel-lead').textContent = l.panelLead;
-    $('run-speed').textContent = S.speed ? l.speedOn : l.speed; $('run-speed').disabled = !!S.speed;
-    $('run-share').textContent = l.share;
-    $('run-g1').textContent = l.g1; $('run-g2').textContent = l.g2;
-    $('run-saved').textContent = l.saved + (S.best ? ' · ⏱ ' + fmt(S.best) : ''); $('run-reset').textContent = l.reset;
-    $('run-rooms').innerHTML = ROOM_IDS.map(function(r){ return '<li class="' + (S.rooms[r] ? 'lit' : '') + '"><button type="button" data-room="' + r + '"><i></i>' + l.rooms[r] + '</button></li>'; }).join('');
-    $('run-achs').innerHTML = LISTED.map(function(k){ var g = !!S.got[k]; return '<li class="' + (g ? 'got' : '') + '"><i class="px"></i><b>' + l.a[k][0] + '</b><em>' + (g ? '✓' : '') + '</em><span>' + l.a[k][1] + '</span></li>'; }).join('');
-    $('run-secrets').innerHTML = SECRETS.map(function(k){ var g = !!S.got[k]; return '<li class="secret ' + (g ? 'got' : '') + '"><i class="px"></i><b>' + (g ? l.a[k][0] : '???') + '</b><em>' + (g ? '✓' : '') + '</em><span>' + (g ? l.a[k][1] : l.secret) + '</span></li>'; }).join('');
-    $('run-reward').hidden = !S.got.cart; $('run-reward-t').textContent = l.reward;
-  }
-
-  /* endowed progress: the run starts with one achievement already earned */
-  S.rooms.top = 1; if(rooms[0]) rooms[0].classList.add('lit');
-  if(!S.got.lit){ S.got.lit = Date.now(); save(); setTimeout(function(){ toast(L().unlocked, L().a.lit[0]); }, 2400); }
-  render();
-})();
-
 /* ================= The forge =================
    The name is sampled from the real <h1> layout into a grid of square embers.
    Embers rise from below and lock into the letters, then smoulder. The pointer
@@ -1489,21 +1094,13 @@ function applyLang(lang){
 
   /* heat ramp: char → deep red → ember → flame → white-hot */
   var STOPS = [[0,[46,20,13]],[.25,[124,36,16]],[.5,[226,74,26]],[.72,[255,150,62]],[.9,[255,214,150]],[1,[255,246,224]]];
-  /* blue flame: an unlockable palette */
-  var STOPS_BLUE = [[0,[14,22,34]],[.25,[22,52,96]],[.5,[46,110,200]],[.72,[110,180,255]],[.9,[200,232,255]],[1,[244,250,255]]];
   var NB = 32, COLORS = [];
-  function buildColors(st){
-    COLORS.length = 0;
-    for(var b=0;b<NB;b++){
-      var h = b/(NB-1), k = 0;
-      while(k < st.length-2 && h > st[k+1][0]) k++;
-      var a = st[k], c = st[k+1], f = (h - a[0])/(c[0]-a[0]);
-      COLORS.push('rgb('+Math.round(a[1][0]+(c[1][0]-a[1][0])*f)+','+Math.round(a[1][1]+(c[1][1]-a[1][1])*f)+','+Math.round(a[1][2]+(c[1][2]-a[1][2])*f)+')');
-    }
+  for(var b=0;b<NB;b++){
+    var h = b/(NB-1), k = 0;
+    while(k < STOPS.length-2 && h > STOPS[k+1][0]) k++;
+    var a = STOPS[k], c = STOPS[k+1], f = (h - a[0])/(c[0]-a[0]);
+    COLORS.push('rgb('+Math.round(a[1][0]+(c[1][0]-a[1][0])*f)+','+Math.round(a[1][1]+(c[1][1]-a[1][1])*f)+','+Math.round(a[1][2]+(c[1][2]-a[1][2])*f)+')');
   }
-  var blue = false; try{ blue = localStorage.getItem('eb_flame') === 'blue'; }catch(e){}
-  buildColors(blue ? STOPS_BLUE : STOPS);
-  window.forgePalette = function(name){ buildColors(name === 'blue' ? STOPS_BLUE : STOPS); try{ localStorage.setItem('eb_flame', name); }catch(e){} };
   var buckets = []; for(var q=0;q<NB;q++) buckets.push([]);
 
   /* free sparks that break off and rise */
@@ -1689,7 +1286,7 @@ function applyLang(lang){
     var r = hero.getBoundingClientRect();
     mx = x - r.left; my = y - r.top;
     mActive = 1; lastMove = performance.now()/1000;
-    if(!interacted && hint){ interacted = true; setTimeout(function(){ hint.classList.add('done'); }, 1400); setTimeout(function(){ document.dispatchEvent(new CustomEvent('eb:stir')); }, 900); }
+    if(!interacted && hint){ interacted = true; setTimeout(function(){ hint.classList.add('done'); }, 1400); }
   }
   hero.addEventListener('pointermove', function(e){ if(e.pointerType !== 'touch') point(e.clientX, e.clientY); }, {passive:true});
   hero.addEventListener('pointerleave', function(){ mActive = Math.min(mActive, .3); }, {passive:true});
