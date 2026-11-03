@@ -4,291 +4,359 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Jose David Yepes Arango — Game Designer & Unity Developer. Founder of EmberBlast.">
+<meta name="theme-color" content="#1a1411">
 <title>Jose Yepes — EmberBlast</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" href="assets/logo.png">
+<link rel="preload" href="assets/fonts/big-shoulders-display.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="assets/fonts/schibsted-grotesk.woff" as="font" type="font/woff" crossorigin>
+<script>
+  /* Decide before first paint whether the forge will draw the name, so the
+     plain text never flashes. If anything fails later, the class is removed
+     and the real <h1> text shows. */
+  (function(){
+    try{
+      var ok = !!document.createElement('canvas').getContext &&
+               !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+      if(ok) document.documentElement.classList.add('forge-on');
+    }catch(e){}
+  })();
+</script>
 <style>
 /*
-  Layout concept: a vertical "run" — the page reads like a game session log.
-  A left-edge spine (timeline rail) runs top to bottom through the experience
-  section; the hero plays on a dark "screen"; project cards sit in a cartridge
-  grid, each with a tiny HUD readout (role + genre). Ember orange vs. cold
-  cyan = the Fire/Ice duality from El Ritual, carried through as the site's
-  own two-tone identity.
+  World: a forge at night. Colour is a temperature scale, not a single accent —
+  char → deep red → ember → flame → white-hot, plus quenched steel for things
+  that have cooled. Heat carries meaning: the timeline glows by recency and
+  the on-hold project sits in steel.
+  The one spectacle is the hero: the name built from square embers (pixels,
+  like EmberBlast's art) that rise, settle, flare under the pointer and cool
+  as you scroll away. Everything else stays quiet and exact.
 */
+/* Self-hosted variable fonts (SIL OFL — licences in assets/fonts) */
+@font-face{font-family:"Big Shoulders Display"; src:url("assets/fonts/big-shoulders-display.woff") format("woff"); font-weight:100 900; font-display:swap}
+@font-face{font-family:"Schibsted Grotesk"; src:url("assets/fonts/schibsted-grotesk.woff") format("woff"); font-weight:400 900; font-style:normal; font-display:swap}
+@font-face{font-family:"Schibsted Grotesk"; src:url("assets/fonts/schibsted-grotesk-italic.woff") format("woff"); font-weight:400 900; font-style:italic; font-display:swap}
+@font-face{font-family:"JetBrains Mono"; src:url("assets/fonts/jetbrains-mono.woff") format("woff"); font-weight:100 800; font-display:swap}
+
 :root{
-  --bg: #121010;
-  --bg-raised: #1a1715;
-  --bg-card: #1d1917;
-  --line: #322c28;
-  --fg: #f3ede7;
-  --fg-dim: #a99e94;
-  --fg-faint: #6f655c;
-  --ember: #ff6a33;
-  --ember-dim: #c9501f;
-  --ice: #5fd6d6;
-  --paper: #f3ede7;
-  --display: "Unbounded", system-ui, sans-serif;
-  --body: "Manrope", system-ui, sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --soot:#1a1411;
+  --soot-2:#211a16;
+  --soot-3:#2a211c;
+  --rule:#3b2f28;
+  --ash:#f1e7dc;
+  --ash-dim:#b9ab9e;
+  --ash-faint:#948577;
+
+  /* heat scale */
+  --h0:#3a1d14;
+  --h1:#7c2410;
+  --h2:#c23a14;
+  --h3:#ef5a1f;
+  --h4:#ff9a45;
+  --h5:#ffe7b8;
+  --flame:#ff8f45;
+  --steel:#94b6c2;
+  --steel-dim:#5f7a84;
+
+  --display:"Big Shoulders Display", "Arial Narrow", sans-serif;
+  --body:"Schibsted Grotesk", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, monospace;
+
+  --ease-out:cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-io:cubic-bezier(0.77, 0, 0.175, 1);
+
+  --wrap:1240px;
+  --gut:max(20px, env(safe-area-inset-left, 0px));
+  color-scheme:dark;
 }
-@media (prefers-color-scheme: light){
-  :root:not([data-theme="dark"]){
-    --bg:#f3ede7; --bg-raised:#ece4db; --bg-card:#ffffff; --line:#ddd2c4;
-    --fg:#1b1613; --fg-dim:#584e46; --fg-faint:#8c8074;
-    --ember:#d6511f; --ember-dim:#b03f15; --ice:#0e8e8e;
-    color-scheme: light;
-  }
-}
-:root[data-theme="light"]{
-  --bg:#f3ede7; --bg-raised:#ece4db; --bg-card:#ffffff; --line:#ddd2c4;
-  --fg:#1b1613; --fg-dim:#584e46; --fg-faint:#8c8074;
-  --ember:#d6511f; --ember-dim:#b03f15; --ice:#0e8e8e;
-  color-scheme: light;
-}
-:root[data-theme="dark"]{ color-scheme: dark; }
 
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{background:var(--soot); scroll-behavior:smooth; -webkit-text-size-adjust:100%}
 @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
-section[id], header.hero{scroll-margin-top:60px}
-html{background:var(--bg)}
 body{
-  margin:0; color:var(--fg);
-  font-family:var(--body); line-height:1.55;
-  padding-left:max(0px, env(safe-area-inset-left, 0px));
-  padding-right:max(0px, env(safe-area-inset-right, 0px));
+  margin:0; color:var(--ash); background:var(--soot);
+  font-family:var(--body); font-size:17px; line-height:1.6;
+  font-feature-settings:"kern","liga";
+  caret-color:var(--flame);
 }
-#ember-fx{position:fixed; inset:0; z-index:-1; pointer-events:none; display:block; width:100%; height:100%}
-@media (prefers-reduced-motion: reduce){ #ember-fx{display:none} }
 img{max-width:100%; display:block}
-a{color:inherit}
-.wrap{max-width:1180px; margin:0 auto; padding-left:max(20px, env(safe-area-inset-left,0px)); padding-right:max(20px, env(safe-area-inset-right,0px))}
-h1,h2,h3{font-family:var(--display); text-wrap:balance; margin:0; letter-spacing:-0.01em}
-.eyebrow{font-family:var(--mono); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ember)}
-.lede{color:var(--fg-dim); max-width:62ch}
+a{color:inherit; text-underline-offset:.22em; text-decoration-thickness:1px}
+::selection{background:var(--h3); color:#1a0d07}
+:focus-visible{outline:2px solid var(--flame); outline-offset:3px; border-radius:2px}
+html{scrollbar-color:var(--rule) var(--soot)}
+::-webkit-scrollbar{width:10px; height:10px}
+::-webkit-scrollbar-track{background:var(--soot)}
+::-webkit-scrollbar-thumb{background:var(--rule); border-radius:10px; border:2px solid var(--soot)}
 .sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+.wrap{max-width:var(--wrap); margin:0 auto; padding-inline:var(--gut)}
+.i{width:.95em; height:.95em; flex:none; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round}
+section[id], header[id], footer[id]{scroll-margin-top:72px}
 
-/* ---- Nav ---- */
-nav{
-  position:sticky; top:0; z-index:40; backdrop-filter:blur(10px);
-  background:color-mix(in srgb, var(--bg) 82%, transparent);
-  border-bottom:1px solid var(--line);
+h1,h2,h3{margin:0; font-weight:inherit}
+h2{
+  font-family:var(--display); font-weight:800; text-transform:uppercase;
+  font-size:clamp(2.4rem, 5.4vw, 4.4rem); line-height:.94; letter-spacing:-.005em;
+  text-wrap:balance; max-width:20ch;
 }
-nav .row{display:flex; align-items:center; justify-content:space-between; padding-block:14px; gap:16px; flex-wrap:wrap}
-.brand{font-family:var(--display); font-weight:700; font-size:15px; letter-spacing:.02em; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--fg)}
-.brand .logo{width:22px; height:22px; image-rendering:pixelated; filter:drop-shadow(0 0 6px color-mix(in srgb, var(--ember) 60%, transparent))}
-.navlinks{display:flex; gap:22px; font-size:13.5px; font-family:var(--mono)}
-.navlinks a{text-decoration:none; color:var(--fg-dim); transition:color .15s}
-.navlinks a:hover{color:var(--ember)}
-.nav-right{display:flex; align-items:center; gap:16px}
-.lang-switch{display:flex; gap:3px; border:1px solid var(--line); border-radius:7px; padding:3px; flex-shrink:0}
-.lang-btn{font-family:var(--mono); font-size:11px; padding:5px 10px; border-radius:5px; border:none; background:transparent; color:var(--fg-dim); cursor:pointer; letter-spacing:.04em}
-.lang-btn[aria-pressed="true"]{background:var(--ember); color:#15110e; font-weight:700}
-@media (max-width:640px){
+h3{font-family:var(--display); font-weight:700; text-transform:uppercase; letter-spacing:.01em; line-height:1.02; text-wrap:balance}
+p{margin:0}
+.lede{color:var(--ash-dim); max-width:62ch; font-size:1.06rem}
+
+/* ---------- Nav ---------- */
+.nav{
+  position:sticky; top:0; z-index:50;
+  background:color-mix(in srgb, var(--soot) 90%, transparent);
+  border-bottom:1px solid color-mix(in srgb, var(--rule) 70%, transparent);
+}
+.nav .row{display:flex; align-items:center; gap:28px; height:60px}
+.brand{display:flex; align-items:center; gap:10px; text-decoration:none; font-family:var(--display); font-weight:800; font-size:1.15rem; letter-spacing:.04em; text-transform:uppercase; white-space:nowrap}
+.brand img{width:24px; height:24px; image-rendering:pixelated}
+.navlinks{display:flex; gap:24px; font-size:.9rem; margin-left:auto}
+.navlinks a{text-decoration:none; color:var(--ash-dim); transition:color .18s ease}
+.navlinks a:hover{color:var(--ash)}
+.lang{display:flex; border:1px solid var(--rule); border-radius:999px; padding:3px; flex:none}
+.lang button{
+  font:600 .74rem/1 var(--body); letter-spacing:.06em; padding:6px 10px; border:0; border-radius:999px;
+  background:transparent; color:var(--ash-dim); cursor:pointer; transition:background-color .2s ease, color .2s ease, transform .16s var(--ease-out);
+}
+.lang button:active{transform:scale(.95)}
+.lang button[aria-pressed="true"]{background:var(--ash); color:var(--soot)}
+@media (max-width:760px){
+  .nav .row{height:auto; flex-wrap:wrap; row-gap:4px; padding-block:12px 10px; column-gap:16px}
+  .lang{margin-left:auto}
   .navlinks{
-    order:3; width:100%; gap:18px; overflow-x:auto; -webkit-overflow-scrolling:touch;
-    scrollbar-width:none; padding-bottom:2px; -webkit-mask-image:linear-gradient(90deg, #000 92%, transparent);
+    order:3; width:100%; margin:0; gap:20px; overflow-x:auto; scrollbar-width:none; padding-bottom:2px;
+    -webkit-mask-image:linear-gradient(90deg,#000 88%,transparent); mask-image:linear-gradient(90deg,#000 88%,transparent);
   }
   .navlinks::-webkit-scrollbar{display:none}
-  .navlinks a{flex-shrink:0}
+  .navlinks a{flex:none}
 }
 
-/* ---- Hero ---- */
-.hero{position:relative; overflow:hidden; border-bottom:1px solid var(--line)}
-.hero::before{
-  content:""; position:absolute; inset:-20% -10% auto -10%; height:140%;
+/* ---------- Hero / the forge ---------- */
+.hero{
+  position:relative; overflow:hidden; isolation:isolate;
+  min-height:calc(100svh - 60px);
+  display:flex; flex-direction:column;
   background:
-    radial-gradient(60% 55% at 18% 15%, color-mix(in srgb, var(--ember) 28%, transparent), transparent 60%),
-    radial-gradient(45% 50% at 95% 10%, color-mix(in srgb, var(--ice) 16%, transparent), transparent 65%);
-  pointer-events:none;
+    radial-gradient(120% 70% at 50% 108%, color-mix(in srgb, var(--h2) 30%, transparent), transparent 62%),
+    var(--soot);
 }
-.hero-inner{position:relative; padding-block:56px 44px; display:grid; grid-template-columns:minmax(0,1fr); gap:26px}
-.kicker{display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:12px; color:var(--fg-dim); flex-wrap:wrap}
-.kicker .sep{color:var(--fg-faint)}
-.hero h1{font-size:clamp(34px, 6vw, 62px); line-height:1.02; max-width:18ch}
-.hero h1 .accent{color:var(--ember)}
-.hero-sub{display:flex; gap:28px; flex-wrap:wrap; align-items:flex-start; justify-content:space-between}
-.role-line{font-family:var(--mono); font-size:14.5px; color:var(--fg-dim); max-width:50ch}
-.cta-row{display:flex; gap:10px; flex-wrap:wrap}
+#forge{position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; display:block}
+.hero-inner{
+  position:relative; z-index:1; flex:1;
+  display:grid; grid-template-rows:auto 1fr auto; gap:28px;
+  padding-block:clamp(24px, 5vh, 48px) clamp(28px, 6vh, 56px);
+  width:100%;
+}
+.hero-meta{display:flex; flex-wrap:wrap; gap:6px 22px; font-size:.88rem; color:var(--ash-dim)}
+.avail{display:inline-flex; align-items:center; gap:8px; color:var(--ash)}
+.px{display:inline-block; width:7px; height:7px; background:var(--h4); box-shadow:0 0 10px 1px color-mix(in srgb, var(--h3) 70%, transparent); flex:none}
+.forge-name{
+  align-self:center;
+  font-family:var(--display); font-weight:900; text-transform:uppercase;
+  font-size:clamp(5.5rem, 21.5vw, 19rem); line-height:.86; letter-spacing:0;
+  color:var(--flame); margin:0 0 0 -.02em;
+  -webkit-user-select:none; user-select:none;
+}
+.forge-name .ln{display:inline-block}
+.forge-on .forge-name .ln{color:transparent}
+@media (max-width:640px){ .forge-name{font-size:37vw; line-height:.84} }
+.hero-foot{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:24px 48px; align-items:end}
+.hero-role{font-family:var(--display); font-weight:700; text-transform:uppercase; font-size:clamp(1.5rem, 2.6vw, 2.15rem); line-height:1; letter-spacing:.01em}
+.hero-sub{color:var(--ash-dim); max-width:56ch; margin-top:12px}
+.hero-sub b{color:var(--ash); font-weight:500}
+.cta-row{display:flex; flex-wrap:wrap; gap:10px}
+.hint{font-size:.82rem; color:var(--ash-faint)}
+.hint-in{display:inline-flex; align-items:center; gap:10px; transition:opacity .6s ease}
+.hint .touch{display:none}
+@media (pointer:coarse){ .hint .fine{display:none} .hint .touch{display:inline} }
+.hint.done .hint-in{opacity:0}
+html:not(.forge-on) .hint{display:none}
+@media (max-width:860px){ .hero-foot{grid-template-columns:minmax(0,1fr)} }
+@media (min-width:1100px){
+  .hero-inner{grid-template-columns:minmax(0,1fr) clamp(320px, 28vw, 410px); grid-template-rows:auto 1fr; column-gap:clamp(40px,4vw,72px)}
+  .hero-meta{grid-column:1 / -1}
+  .forge-name{font-size:min(21vw, calc((100svh - 280px) / 1.72)); align-self:center}
+  .hero-side{align-self:end; padding-bottom:6px}
+  .hero-side .hero-foot{grid-template-columns:minmax(0,1fr); gap:28px}
+  .hero-side .hero-sub{max-width:44ch}
+}
+
+/* one orchestrated load: text below the name settles in as the embers lock */
+@keyframes rise{from{opacity:0; transform:translateY(10px); filter:blur(4px)} to{opacity:1; transform:none; filter:none}}
+.forge-on .hero-meta,
+.forge-on .hero-foot > *,
+.forge-on .hint{animation:rise .9s var(--ease-out) both}
+.forge-on .hero-meta{animation-delay:.25s}
+.forge-on .hero-foot > :nth-child(1){animation-delay:1.15s}
+.forge-on .hero-foot > :nth-child(2){animation-delay:1.25s}
+.forge-on .hint{animation-delay:1.9s}
+
+/* ---------- Buttons ---------- */
 .btn{
-  font-family:var(--mono); font-size:12.5px; letter-spacing:.03em; text-decoration:none;
-  padding:10px 16px; border-radius:7px; border:1px solid var(--line);
-  display:inline-flex; align-items:center; gap:8px; transition:transform .12s, border-color .12s, background .12s;
-  white-space:nowrap;
+  display:inline-flex; align-items:center; gap:9px; white-space:nowrap;
+  font:500 .95rem/1 var(--body); text-decoration:none;
+  padding:13px 18px; border-radius:4px; border:1px solid var(--rule);
+  color:var(--ash); background:transparent;
+  transition:transform .16s var(--ease-out), background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .25s ease;
 }
-.btn:hover{transform:translateY(-1px)}
-.btn-primary{background:var(--ember); color:#15110e; border-color:var(--ember); font-weight:700}
-.btn-primary:hover{background:#ff7d4d}
-.btn-ghost{color:var(--fg)}
-.btn-ghost:hover{border-color:var(--ember); color:var(--ember)}
+.btn:active{transform:scale(.97)}
+.btn-hot{background:var(--h3); border-color:var(--h3); color:#1b0c06; font-weight:700}
+@media (hover:hover) and (pointer:fine){
+  .btn:hover{border-color:var(--ash-dim)}
+  .btn-hot:hover{background:var(--h4); border-color:var(--h4); box-shadow:0 8px 28px -10px color-mix(in srgb, var(--h3) 80%, transparent)}
+}
 
-.stat-strip{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); border-top:1px solid var(--line)}
-.stat{padding:18px 20px; border-right:1px solid var(--line)}
-.stat:last-child{border-right:none}
-.stat b{display:block; font-family:var(--display); font-size:clamp(20px,3vw,30px); color:var(--ember)}
-.stat span{font-family:var(--mono); font-size:11px; color:var(--fg-faint); text-transform:uppercase; letter-spacing:.08em}
-@media (max-width:640px){ .stat-strip{grid-template-columns:repeat(2,minmax(0,1fr))} .stat{border-bottom:1px solid var(--line)} }
+/* ---------- Sections ---------- */
+section{padding-block:clamp(80px, 11vw, 150px); border-top:1px solid var(--rule)}
+.head{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,.72fr); gap:24px 56px; align-items:end; margin-bottom:clamp(40px, 6vw, 72px)}
+.head .lede{justify-self:end}
+@media (max-width:860px){ .head{grid-template-columns:minmax(0,1fr)} .head .lede{justify-self:start} }
 
-/* ---- Section shell ---- */
-section{padding-block:64px}
-.section-head{display:flex; justify-content:space-between; align-items:flex-end; gap:20px; margin-bottom:34px; flex-wrap:wrap}
-.section-head h2{font-size:clamp(24px,3.4vw,34px)}
+/* ---------- About ---------- */
+.about-top{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:32px 72px; align-items:start}
+.about-top .lede{margin-top:8px}
+@media (max-width:900px){ .about-top{grid-template-columns:minmax(0,1fr)} }
+.record{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); margin:clamp(48px,7vw,80px) 0 0; border-top:1px solid var(--rule)}
+.record div{padding:20px 20px 0 0}
+.record dt{font-family:var(--display); font-weight:800; font-size:clamp(2.2rem, 4vw, 3.2rem); line-height:1; color:var(--flame); font-variant-numeric:tabular-nums}
+.record dd{margin:8px 0 0; font-size:.88rem; color:var(--ash-dim); max-width:18ch}
+@media (max-width:640px){ .record{grid-template-columns:repeat(2, minmax(0,1fr)); row-gap:12px} }
+.signature{
+  margin-top:clamp(56px, 8vw, 96px);
+  font-size:clamp(1.35rem, 2.5vw, 2rem); line-height:1.32; font-weight:400; letter-spacing:-.01em;
+  max-width:34ch; color:var(--ash); text-wrap:pretty;
+}
+.principles{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:0 40px; margin-top:clamp(56px, 7vw, 88px)}
+.principles > div{border-top:1px solid var(--rule); padding-top:22px}
+.principles h3{font-size:1.55rem; margin-bottom:10px}
+.principles p{color:var(--ash-dim); font-size:.98rem; max-width:40ch}
+@media (max-width:860px){ .principles{grid-template-columns:minmax(0,1fr); gap:28px} }
+
+/* ---------- Case studies ---------- */
+.case{display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:32px clamp(32px, 5vw, 72px); align-items:start}
+.case + .case{margin-top:clamp(72px, 10vw, 128px)}
+.case.flip{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}
+.case.flip figure{order:2}
+@media (max-width:900px){ .case, .case.flip{grid-template-columns:minmax(0,1fr)} .case.flip figure{order:0} }
+.case figure{margin:0}
+.case .art{
+  border-radius:4px; overflow:hidden; background:#000;
+  box-shadow:0 30px 80px -40px color-mix(in srgb, var(--h2) 60%, transparent), 0 2px 6px rgba(0,0,0,.4);
+}
+.case .art img{width:100%; aspect-ratio:16/10; object-fit:cover}
+.case.square .art img{aspect-ratio:1; object-fit:contain; background:radial-gradient(70% 70% at 50% 50%, #2b1a12, #0d0907); padding:12%; image-rendering:pixelated}
+.case figcaption{display:flex; flex-wrap:wrap; gap:4px 18px; margin-top:14px; font-size:.82rem; color:var(--ash-faint)}
+.case-body{display:flex; flex-direction:column; gap:20px; padding-top:4px}
+.case-body h3{font-size:clamp(1.9rem, 3.2vw, 2.6rem)}
+.case-body p{color:var(--ash-dim); max-width:58ch}
+.minor .case-body h3{font-size:clamp(1.6rem, 2.6vw, 2.1rem)}
+.kicker-line{font-size:.92rem; color:var(--ash-faint)}
+
+/* the signature device: a system rule, struck through, becomes fiction */
+.swap{display:grid; gap:10px; padding:18px 0; border-block:1px solid var(--rule)}
+.swap .rule{font-family:var(--mono); font-size:.86rem; color:var(--steel-dim); text-decoration:line-through; text-decoration-color:var(--h2); text-decoration-thickness:2px}
+.swap .fiction{font-size:1.12rem; line-height:1.45; color:var(--ash); display:flex; gap:12px}
+.swap .fiction::before{content:""; width:8px; height:8px; margin-top:.55em; flex:none; background:var(--h4); box-shadow:0 0 12px 1px color-mix(in srgb, var(--h3) 70%, transparent)}
+.tags{display:flex; flex-wrap:wrap; gap:8px}
+.tag{font-size:.8rem; color:var(--ash-dim); border:1px solid var(--rule); padding:5px 10px; border-radius:3px}
+
+/* ---------- Games ---------- */
+.games{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:clamp(36px,4vw,56px) clamp(20px,2.4vw,32px)}
+@media (max-width:980px){ .games{grid-template-columns:repeat(2, minmax(0,1fr))} }
+@media (max-width:600px){ .games{grid-template-columns:minmax(0,1fr)} }
+.game{display:flex; flex-direction:column; gap:10px; text-decoration:none; color:var(--ash); transition:transform .16s var(--ease-out)}
+.game:active{transform:scale(.985)}
+.game .shot{position:relative; border-radius:4px; overflow:hidden; background:#000; aspect-ratio:4/3}
+.game .shot img{width:100%; height:100%; object-fit:cover; transition:transform .6s var(--ease-out), filter .4s ease}
+.game .shot::after{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+  transition:box-shadow .3s ease;
+}
+@media (hover:hover) and (pointer:fine){
+  .game:hover .shot img{transform:scale(1.04); filter:saturate(1.15) brightness(1.05)}
+  .game:hover .shot::after{box-shadow:inset 0 0 0 1px var(--h3), inset 0 -60px 60px -40px color-mix(in srgb, var(--h3) 55%, transparent)}
+  .game:hover .go{color:var(--flame)}
+}
+.game h3{font-size:1.7rem; margin-top:6px}
+.game .role{font-size:.84rem; color:var(--ash-faint)}
+.award{display:flex; gap:10px; align-items:baseline; font-size:.9rem; color:var(--flame); font-weight:500}
+.award .px{transform:translateY(-1px)}
+.game .desc{font-size:.95rem; color:var(--ash-dim)}
+.game .meta{display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:.84rem; color:var(--ash-faint); margin-top:auto; padding-top:8px; border-top:1px solid var(--rule)}
+.go{display:inline-flex; align-items:center; gap:6px; color:var(--ash); transition:color .2s ease}
+
+/* ---------- Dabloons (cooled / on hold) ---------- */
+.held{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:32px 72px; align-items:start}
+@media (max-width:900px){ .held{grid-template-columns:minmax(0,1fr)} }
+.status{display:inline-flex; align-items:center; gap:10px; font-size:.86rem; color:var(--steel); border:1px solid color-mix(in srgb, var(--steel) 35%, transparent); padding:7px 12px; border-radius:3px; width:max-content; max-width:100%}
+.status::before{content:""; width:7px; height:7px; background:var(--steel); flex:none}
+.held .copy{display:flex; flex-direction:column; gap:20px}
+.held .copy h3{font-size:clamp(1.7rem, 2.8vw, 2.3rem)}
+.held .copy p{color:var(--ash-dim); max-width:60ch}
+.held .meta{font-size:.9rem; color:var(--ash-faint)}
+
+/* ---------- Experience: the rail cools with age ---------- */
+.rail{list-style:none; margin:0; padding:0; position:relative}
+.rail::before{
+  content:""; position:absolute; left:5px; top:10px; bottom:10px; width:1px;
+  background:linear-gradient(var(--h4), var(--h2) 40%, var(--h0) 80%, var(--steel-dim));
+}
+.job{position:relative; padding:0 0 clamp(36px,4vw,52px) 40px; display:grid; grid-template-columns:minmax(0,1fr) 13rem; gap:6px 32px}
+.job:last-child{padding-bottom:0}
+.job::before{
+  content:""; position:absolute; left:0; top:.55em; width:11px; height:11px;
+  background:var(--heat); box-shadow:0 0 14px 1px color-mix(in srgb, var(--heat) 60%, transparent);
+}
+.job h3{font-size:1.65rem; grid-column:1}
+.job .when{grid-column:2; grid-row:1; justify-self:end; font-size:.9rem; color:var(--ash-dim); font-variant-numeric:tabular-nums; white-space:nowrap; padding-top:.3em}
+.job .org{grid-column:1 / -1; font-size:.95rem; color:var(--ash)}
+.job p{grid-column:1 / -1; color:var(--ash-dim); max-width:68ch; font-size:.98rem}
 @media (max-width:640px){
-  section{padding-block:44px}
-  .hero-inner{padding-block:36px 28px}
-  .section-head{margin-bottom:24px}
+  .job{grid-template-columns:minmax(0,1fr); padding-left:32px}
+  .job .when{grid-column:1; grid-row:auto; justify-self:start; padding-top:0}
 }
+.blaze{grid-column:1 / -1; margin-top:18px; display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px}
+.blaze img{border-radius:3px; aspect-ratio:16/10; object-fit:cover; width:100%}
+.blaze-note{grid-column:1 / -1; margin-top:14px; display:grid; gap:6px; max-width:68ch}
+.blaze-note b{font-weight:500; color:var(--ash)}
+.blaze-note span{color:var(--ash-faint); font-size:.86rem}
+.blaze-note p{color:var(--ash-dim); font-size:.95rem}
+@media (max-width:560px){ .blaze{grid-template-columns:minmax(0,1fr)} }
 
-/* ---- Pillars (about) ---- */
-.pillars{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:12px; overflow:hidden}
-.pillar{background:var(--bg-card); padding:24px 22px; display:flex; flex-direction:column; gap:10px}
-.pillar .num{font-family:var(--mono); color:var(--ember); font-size:12px}
-.pillar h3{font-size:17px}
-.pillar p{color:var(--fg-dim); font-size:14px; margin:0}
-@media (max-width:760px){ .pillars{grid-template-columns:minmax(0,1fr)} }
+/* ---------- Skills ---------- */
+.skills{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:36px 40px}
+@media (max-width:860px){ .skills{grid-template-columns:minmax(0,1fr)} }
+.skills > div{border-top:1px solid var(--rule); padding-top:22px}
+.skills h3{font-size:1.55rem; margin-bottom:14px}
+.skills ul{list-style:none; margin:0; padding:0; display:grid; gap:9px}
+.skills li{color:var(--ash-dim); font-size:.98rem; padding-left:18px; position:relative}
+.skills li::before{content:""; position:absolute; left:0; top:.68em; width:6px; height:6px; background:var(--rule)}
 
-.about-grid{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr); gap:48px; align-items:start}
-@media (max-width:860px){ .about-grid{grid-template-columns:minmax(0,1fr)} }
-.callout{
-  background:var(--bg-raised); border:1px solid var(--line); border-left:3px solid var(--ember);
-  border-radius:0 10px 10px 0; padding:18px 20px; font-size:14px; color:var(--fg-dim);
+/* ---------- Footer ---------- */
+footer{
+  border-top:1px solid var(--rule); padding-block:clamp(88px, 12vw, 160px) 36px;
+  background:radial-gradient(90% 80% at 50% 130%, color-mix(in srgb, var(--h2) 32%, transparent), transparent 65%), var(--soot);
 }
-
-/* ---- Featured mechanic (El Ritual) ---- */
-.feature{
-  display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.1fr); gap:0; border:1px solid var(--line); border-radius:14px; overflow:hidden;
-  background:var(--bg-card);
-}
-@media (max-width:860px){ .feature{grid-template-columns:minmax(0,1fr)} }
-@media (max-width:640px){ .feature-art{min-height:190px} .feature-body{padding:22px 20px} }
-.feature-art{position:relative; min-height:260px; background:#000}
-.feature-art img{width:100%; height:100%; object-fit:cover; display:block; opacity:.92}
-.feature-art::after{content:""; position:absolute; inset:0; background:linear-gradient(0deg, rgba(10,8,7,.55), transparent 45%)}
-.feature-tag{position:absolute; left:16px; bottom:14px; font-family:var(--mono); font-size:11px; color:#fff; background:rgba(0,0,0,.45); padding:5px 9px; border-radius:6px; letter-spacing:.06em}
-.feature-body{padding:30px 32px; display:flex; flex-direction:column; gap:14px}
-.feature-body h3{font-size:24px}
-.feature-body p{color:var(--fg-dim); font-size:14.5px; margin:0}
-.rule-swap{
-  display:flex; gap:14px; align-items:center; font-family:var(--mono); font-size:12.5px;
-  background:var(--bg-raised); border:1px solid var(--line); border-radius:8px; padding:12px 14px; flex-wrap:wrap;
-}
-.rule-swap .from{color:var(--fg-faint); text-decoration:line-through}
-.rule-swap .to{color:var(--ice)}
-.tag-row{display:flex; gap:8px; flex-wrap:wrap}
-.tag{font-family:var(--mono); font-size:10.5px; color:var(--fg-dim); border:1px solid var(--line); padding:4px 9px; border-radius:20px; text-transform:uppercase; letter-spacing:.05em}
-
-/* ---- Recognition badge ---- */
-.badge-row{display:flex; flex-wrap:wrap; gap:5px; margin-top:2px}
-.badge{font-family:var(--mono); font-size:9.5px; color:var(--ember); background:color-mix(in srgb, var(--ember) 14%, transparent); border:1px solid color-mix(in srgb, var(--ember) 35%, transparent); padding:3px 7px; border-radius:5px; letter-spacing:.03em; display:inline-flex; align-items:center; gap:4px; max-width:100%; white-space:normal}
-
-/* ---- Now building ---- */
-.now-card{
-  background:var(--bg-card); border:1px solid var(--line); border-radius:14px; padding:28px 30px;
-  display:flex; flex-direction:column; gap:14px; align-items:flex-start;
-}
-.now-status{font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; color:var(--ice); background:color-mix(in srgb, var(--ice) 14%, transparent); border:1px solid color-mix(in srgb, var(--ice) 35%, transparent); padding:5px 11px; border-radius:20px}
-.now-body h3{font-size:19px; margin:2px 0 2px}
-.now-body p{color:var(--fg-dim); font-size:14px; margin:0; max-width:70ch}
-
-/* ---- Secondary case study (pattern proof) ---- */
-.feature-mini{
-  display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr); gap:0; border:1px solid var(--line); border-radius:14px; overflow:hidden;
-  background:var(--bg-card); margin-top:18px;
-}
-@media (max-width:760px){ .feature-mini{grid-template-columns:minmax(0,1fr)} }
-.feature-mini .feature-art{min-height:200px}
-.feature-mini .feature-body{padding:24px 26px; gap:10px}
-.feature-mini .feature-body h3{font-size:18px}
-.feature-mini .feature-body p{font-size:13.5px}
-.feature-mini .rule-swap{font-size:11.5px}
-
-/* ---- Case study block (Blaze of Empires) ---- */
-.case-block{
-  display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0; border:1px solid var(--line); border-radius:14px; overflow:hidden;
-  background:var(--bg-card); margin-top:18px;
-}
-@media (max-width:860px){ .case-block{grid-template-columns:minmax(0,1fr)} }
-.case-media{background:#000; padding:6px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; align-content:center}
-@media (max-width:640px){ .case-media{grid-template-columns:minmax(0,1fr)} .case-body{padding:22px 20px} }
-.case-media img{width:100%; height:100%; aspect-ratio:16/10; object-fit:cover; border-radius:6px; display:block}
-.case-media .ph{aspect-ratio:1; border:1px dashed var(--line); border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:10px; color:var(--fg-faint); text-align:center; padding:6px}
-.case-body{padding:26px 28px; display:flex; flex-direction:column; gap:10px}
-.case-body h3{font-size:18px}
-.case-body p{color:var(--fg-dim); font-size:13.5px; margin:0}
-.case-meta{font-family:var(--mono); font-size:11px; color:var(--ice)}
-
-/* ---- Game grid ---- */
-.game-grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px}
-@media (max-width:980px){ .game-grid{grid-template-columns:repeat(2,minmax(0,1fr))} }
-@media (max-width:560px){ .game-grid{grid-template-columns:minmax(0,1fr)} }
-.card{
-  background:var(--bg-card); border:1px solid var(--line); border-radius:12px; overflow:hidden;
-  display:flex; flex-direction:column; text-decoration:none; color:var(--fg);
-  transition:transform .15s, border-color .15s;
-}
-.card:hover{transform:translateY(-3px); border-color:var(--ember-dim)}
-.card-art{aspect-ratio:4/3; overflow:hidden; background:#000; position:relative}
-.card-art img{width:100%; height:100%; object-fit:cover; transition:transform .3s}
-.card:hover .card-art img{transform:scale(1.05)}
-.card-body{padding:14px 15px 16px; display:flex; flex-direction:column; gap:6px; flex:1}
-.card-body h3{font-size:15.5px}
-.card-role{font-family:var(--mono); font-size:10.5px; color:var(--ice)}
-.card-body p.card-desc{font-size:12.5px; color:var(--fg-dim); margin:0; flex:1}
-.card-meta{display:flex; justify-content:space-between; align-items:center; font-family:var(--mono); font-size:10.5px; color:var(--fg-faint); text-transform:uppercase; letter-spacing:.05em; margin-top:4px}
-.card-meta .play{color:var(--ember); display:flex; align-items:center; gap:4px}
-
-/* ---- Timeline (experience) ---- */
-.timeline{position:relative; padding-left:26px}
-.timeline::before{content:""; position:absolute; left:5px; top:6px; bottom:6px; width:1px; background:var(--line)}
-.tl-item{position:relative; padding-bottom:30px}
-.tl-item:last-child{padding-bottom:0}
-.tl-item::before{content:""; position:absolute; left:-26px; top:4px; width:11px; height:11px; border-radius:50%; background:var(--bg); border:2px solid var(--ember)}
-.tl-head{display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; align-items:baseline}
-.tl-head h3{font-size:16.5px}
-.tl-date{font-family:var(--mono); font-size:11.5px; color:var(--fg-faint); white-space:nowrap}
-.tl-org{font-family:var(--mono); font-size:12px; color:var(--ice); margin-top:2px}
-.tl-item p{color:var(--fg-dim); font-size:13.5px; margin:8px 0 0; max-width:68ch}
-
-/* ---- Skills ---- */
-.skill-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:12px; overflow:hidden}
-@media (max-width:760px){ .skill-grid{grid-template-columns:minmax(0,1fr)} }
-.skill-col{background:var(--bg-card); padding:22px 22px}
-.skill-col h3{font-family:var(--mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--ember); margin-bottom:12px}
-.skill-col ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:7px}
-.skill-col li{font-size:13.5px; color:var(--fg-dim); display:flex; gap:8px}
-.skill-col li::before{content:"›"; color:var(--fg-faint)}
-
-/* ---- Keyword / ATS index ---- */
-.kw-box{background:var(--bg-card); border:1px solid var(--line); border-radius:12px; padding:26px 28px}
-.kw-note{font-size:13px; color:var(--fg-dim); max-width:72ch; margin:0 0 18px}
-.kw-cloud{display:flex; flex-wrap:wrap; gap:8px}
-.kw-cloud .tag{color:var(--fg-dim)}
-
-/* ---- Resume links ---- */
-.doc-row{display:flex; gap:14px; flex-wrap:wrap}
-.doc-card{
-  flex:1; min-width:220px; background:var(--bg-card); border:1px solid var(--line); border-radius:10px;
-  padding:16px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; text-decoration:none; color:var(--fg);
-  transition:border-color .15s;
-}
-.doc-card:hover{border-color:var(--ember)}
-.doc-card .t{font-size:14px; font-weight:600}
-.doc-card .s{font-family:var(--mono); font-size:11px; color:var(--fg-faint)}
-.doc-ico{font-family:var(--mono); color:var(--ember); font-size:18px}
-
-/* ---- Footer / contact ---- */
-footer{border-top:1px solid var(--line); padding-block:46px 40px; background:var(--bg-raised)}
-.contact-grid{display:flex; justify-content:space-between; gap:30px; flex-wrap:wrap; align-items:flex-end}
-.foot-links{display:flex; gap:10px; flex-wrap:wrap}
-.copy{font-family:var(--mono); font-size:11px; color:var(--fg-faint); margin-top:30px}
+.end{font-family:var(--display); font-weight:900; text-transform:uppercase; font-size:clamp(3.2rem, 10vw, 8.5rem); line-height:.88; max-width:12ch; text-wrap:balance}
+.mail{display:inline-block; margin-top:28px; font-size:clamp(1.15rem, 2.4vw, 1.7rem); color:var(--flame); text-decoration:none; border-bottom:1px solid color-mix(in srgb, var(--flame) 40%, transparent); padding-bottom:2px; transition:border-color .2s ease}
+@media (hover:hover){ .mail:hover{border-color:var(--flame)} }
+.contact-line{margin-top:14px; color:var(--ash-dim)}
+.foot-links{display:flex; flex-wrap:wrap; gap:10px; margin-top:36px}
+.colophon{margin-top:72px; padding-top:22px; border-top:1px solid var(--rule); font-size:.82rem; color:var(--ash-faint); display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap}
 </style>
 </head>
 <body>
-<canvas id="ember-fx" aria-hidden="true"></canvas>
 
-<nav>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M12 3v8"/><path d="M8 7l4-4 4 4"/><path d="M5 14c0 4 3 7 7 7s7-3 7-7"/></symbol>
+</svg>
+
+<nav class="nav" aria-label="Main">
   <div class="wrap row">
-    <a class="brand" href="#top"><img class="logo" src="assets/logo.png" alt="EmberBlast">EMBERBLAST</a>
+    <a class="brand" href="#top"><img src="assets/logo.png" alt="">EmberBlast</a>
     <div class="navlinks">
       <a href="#juegos" data-i18n="nav.games">Games</a>
       <a href="#sobre-mi" data-i18n="nav.about">About</a>
@@ -296,38 +364,36 @@ footer{border-top:1px solid var(--line); padding-block:46px 40px; background:var
       <a href="#habilidades" data-i18n="nav.skills">Skills</a>
       <a href="#contacto" data-i18n="nav.contact">Contact</a>
     </div>
-    <div class="nav-right">
-      <div class="lang-switch" role="group" aria-label="Language / Idioma">
-        <button class="lang-btn" data-lang="en" aria-pressed="true" onclick="applyLang('en')">EN</button>
-        <button class="lang-btn" data-lang="es" aria-pressed="false" onclick="applyLang('es')">ES</button>
-      </div>
+    <div class="lang" role="group" aria-label="Language / Idioma">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <button type="button" data-lang="es" aria-pressed="false">ES</button>
     </div>
   </div>
 </nav>
 
 <header class="hero" id="top">
+  <canvas id="forge" aria-hidden="true"></canvas>
   <div class="wrap hero-inner">
-    <div class="kicker">
-      <span data-i18n="hero.loc">MEDELLÍN, COLOMBIA</span><span class="sep">·</span>
-      <span data-i18n="hero.remote">REMOTE / OPEN TO RELOCATION</span><span class="sep">·</span>
-      <span data-i18n="hero.status">AVAILABLE</span>
-    </div>
-    <h1>Jose David Yepes Arango<br><span class="accent" data-i18n="hero.h1b">— Game Designer &amp; Unity Developer.</span></h1>
-    <div class="hero-sub">
-      <p class="role-line" data-i18n="hero.sub">6+ years designing and building games. Founder of <b>EmberBlast</b>: 8 shipped prototypes across different genres, unified by one idea — turning a system rule into part of the fiction.</p>
-      <div class="cta-row">
-        <a class="btn btn-primary" href="https://emberblast.itch.io/" target="_blank" rel="noopener" data-i18n="hero.cta1">Play on itch.io ↗</a>
-        <a class="btn btn-ghost" href="https://www.linkedin.com/in/jose-david-yepes-arango-3232a4126/" target="_blank" rel="noopener">LinkedIn ↗</a>
-        <a class="btn btn-ghost" href="mailto:jdyepes@hotmail.com">jdyepes@hotmail.com</a>
+    <p class="hero-meta">
+      <span class="avail"><i class="px"></i><span data-i18n="hero.status">Available for work</span></span>
+      <span data-i18n="hero.loc">Medellín, Colombia</span>
+      <span data-i18n="hero.remote">Remote or open to relocation</span>
+    </p>
+
+    <h1 class="forge-name"><span class="sr-only">Jose David Yepes Arango — </span><span class="ln" aria-hidden="true">Jose</span> <span class="ln" aria-hidden="true">Yepes</span></h1>
+
+    <div class="hero-side">
+      <div class="hero-foot">
+        <div>
+          <p class="hero-role" data-i18n="hero.h1b">Game Designer &amp; Unity Developer</p>
+          <p class="hero-sub" data-i18n="hero.sub">6+ years designing and building games. Founder of <b>EmberBlast</b>: 8 shipped prototypes across different genres, unified by one idea — turning a system rule into part of the fiction.</p>
+        </div>
+        <div class="cta-row">
+          <a class="btn btn-hot" href="https://emberblast.itch.io/" target="_blank" rel="noopener"><span data-i18n="hero.cta1">Play my games on itch.io</span><svg class="i"><use href="#i-out"/></svg></a>
+          <a class="btn" href="https://www.linkedin.com/in/jose-david-yepes-arango-3232a4126/" target="_blank" rel="noopener">LinkedIn<svg class="i"><use href="#i-out"/></svg></a>
+        </div>
       </div>
-    </div>
-  </div>
-  <div class="wrap" style="padding:0">
-    <div class="stat-strip">
-      <div class="stat"><b>6+</b><span data-i18n="stat.years">Years of experience</span></div>
-      <div class="stat"><b>8</b><span data-i18n="stat.games">Games shipped</span></div>
-      <div class="stat"><b>4</b><span data-i18n="stat.studios">Jam wins &amp; features</span></div>
-      <div class="stat"><b>20K+</b><span data-i18n="stat.followers">Followers (devlogs)</span></div>
+      <p class="hint" style="margin-top:28px"><span class="hint-in"><svg class="i"><use href="#i-hand"/></svg><span class="fine" data-i18n="hero.hint">Run your cursor through the embers</span><span class="touch" data-i18n="hero.hintTouch">Drag your finger through the embers</span></span></p>
     </div>
   </div>
 </header>
@@ -336,32 +402,30 @@ footer{border-top:1px solid var(--line); padding-block:46px 40px; background:var
 
 <section id="sobre-mi">
   <div class="wrap">
-    <div class="about-grid">
-      <div>
-        <div class="eyebrow" data-i18n="about.eyebrow">About</div>
-        <h2 style="margin-top:10px" data-i18n="about.h2">Design and engineering under one roof.</h2>
-        <p class="lede" style="margin-top:16px" data-i18n="about.p">
-          I'm an Engineer in Digital Entertainment Design (UPB, Medellín) working across Game Designer and Unity Developer roles — I design systems and build them myself, which shortens the distance between "what if…" and a playable prototype. I've led multidisciplinary teams, reviewed design across a 7-title studio portfolio as a freelance designer, and built internal AI-assisted tooling (Claude + MCP) to speed up design documentation and review.
-        </p>
-      </div>
-      <div class="callout" data-i18n="about.callout">
-        The design signature that repeats across my prototypes: take a familiar videogame abstraction and make it diegetic — let the fiction explain the rule, not the other way around. My favorite example is below.
-      </div>
+    <div class="about-top">
+      <h2 data-i18n="about.h2">Design and engineering under one roof.</h2>
+      <p class="lede" data-i18n="about.p">I'm an Engineer in Digital Entertainment Design (UPB, Medellín) working across Game Designer and Unity Developer roles — I design systems and build them myself, which shortens the distance between "what if…" and a playable prototype. I've led multidisciplinary teams, reviewed design across a 7-title studio portfolio as a freelance designer, and built internal AI-assisted tooling (Claude + MCP) to speed up design documentation and review.</p>
     </div>
 
-    <div class="pillars" style="margin-top:40px">
-      <div class="pillar">
-        <span class="num">01</span>
+    <dl class="record">
+      <div><dt>6+</dt><dd data-i18n="stat.years">Years of experience</dd></div>
+      <div><dt>8</dt><dd data-i18n="stat.games">Games shipped</dd></div>
+      <div><dt>4</dt><dd data-i18n="stat.studios">Jam wins &amp; features</dd></div>
+      <div><dt>20K+</dt><dd data-i18n="stat.followers">Followers on my devlogs</dd></div>
+    </dl>
+
+    <p class="signature" data-i18n="about.callout">The design signature that repeats across my prototypes: take a familiar videogame abstraction and make it diegetic — let the fiction explain the rule, not the other way around. My favorite example is below.</p>
+
+    <div class="principles">
+      <div>
         <h3 data-i18n="pillar1.h">Systems over features</h3>
         <p data-i18n="pillar1.p">I prefer a few rules that interact over many isolated features. A good system creates more than one consequence.</p>
       </div>
-      <div class="pillar">
-        <span class="num">02</span>
+      <div>
         <h3 data-i18n="pillar2.h">Fast prototype, fast decision</h3>
         <p data-i18n="pillar2.p">Jams, one-week challenges, playable builds in days. Design questions get answered by playing, not debating.</p>
       </div>
-      <div class="pillar">
-        <span class="num">03</span>
+      <div>
         <h3 data-i18n="pillar3.h">AI as infrastructure, not autocomplete</h3>
         <p data-i18n="pillar3.p">I build workflows with Claude Code and MCP for documentation, review, and design memory — not just text generation.</p>
       </div>
@@ -371,262 +435,226 @@ footer{border-top:1px solid var(--line); padding-block:46px 40px; background:var
 
 <section id="featured">
   <div class="wrap">
-    <div class="section-head">
-      <div>
-        <div class="eyebrow" data-i18n="feat.eyebrow">Design case study</div>
-        <h2 style="margin-top:8px" data-i18n="feat.h2">El Ritual — when the cooldown becomes lethal</h2>
-      </div>
+    <div class="head">
+      <h2 data-i18n="feat.h2">El Ritual — when the cooldown becomes lethal</h2>
     </div>
-    <div class="feature">
-      <div class="feature-art">
-        <img src="assets/el-ritual.png" alt="Screenshot of El Ritual, a 2D pixel-art action game">
-        <span class="feature-tag">Unity · 2D Pixel Art · Game Jam 2021</span>
-      </div>
-      <div class="feature-body">
+
+    <article class="case">
+      <figure>
+        <div class="art"><img src="assets/el-ritual.png" alt="Screenshot of El Ritual, a 2D pixel-art action game"></div>
+        <figcaption><span>Unity</span><span>2D pixel art</span><span>Game Jam 2021</span></figcaption>
+      </figure>
+      <div class="case-body">
         <h3 data-i18n="feat.h3">Magic is cursed: a spell can only be cast once every thirty years.</h3>
-        <p data-i18n="feat.p">
-          The player protects the masters of three magic schools — Fire, Ice, and Darkness — while they complete a forbidden ritual. Time crystals speed up spell reuse, but at the cost of aging the wizard in real time: one second of crystal time equals one year of life. Abusing the resource can literally kill the character of old age.
-        </p>
-        <div class="rule-swap">
-          <span class="from">cooldown = 30s</span>
-          <span>→</span>
-          <span class="to" data-i18n="feat.swap">a spell takes thirty years to recharge, and manipulating time ages the character</span>
+        <p data-i18n="feat.p">The player protects the masters of three magic schools — Fire, Ice, and Darkness — while they complete a forbidden ritual. Time crystals speed up spell reuse, but at the cost of aging the wizard in real time: one second of crystal time equals one year of life. Abusing the resource can literally kill the character of old age.</p>
+        <div class="swap">
+          <span class="rule">cooldown = 30s</span>
+          <span class="fiction" data-i18n="feat.swap">a spell takes thirty years to recharge, and manipulating time ages the character</span>
         </div>
-        <div class="tag-row">
+        <div class="tags">
           <span class="tag" data-i18n="feat.tag1">Risk / Reward</span>
           <span class="tag" data-i18n="feat.tag2">Diegetic Resource</span>
           <span class="tag" data-i18n="feat.tag3">Theme = Mechanic</span>
         </div>
-        <div class="cta-row" style="margin-top:4px">
-          <a class="btn btn-ghost" href="https://emberblast.itch.io/el-ritual" target="_blank" rel="noopener" data-i18n="feat.cta">Play El Ritual ↗</a>
-        </div>
+        <div class="cta-row"><a class="btn" href="https://emberblast.itch.io/el-ritual" target="_blank" rel="noopener"><span data-i18n="feat.cta">Play El Ritual</span><svg class="i"><use href="#i-out"/></svg></a></div>
       </div>
-    </div>
+    </article>
 
-    <div class="feature-mini">
-      <div class="feature-art">
-        <img src="assets/path-wizard.png" alt="Screenshot of Path Wizard, a cozy 3D puzzle game">
-        <span class="feature-tag">Unity · 3D · Kenney Jam 2021</span>
-      </div>
-      <div class="feature-body">
-        <div class="eyebrow" data-i18n="pattern.eyebrow" style="font-size:10.5px">Same Signature, Second Game</div>
+    <article class="case flip minor">
+      <figure>
+        <div class="art"><img src="assets/path-wizard.png" alt="Screenshot of Path Wizard, a cozy 3D puzzle game"></div>
+        <figcaption><span>Unity</span><span>3D</span><span>Kenney Jam 2021</span></figcaption>
+      </figure>
+      <div class="case-body">
+        <p class="kicker-line" data-i18n="pattern.eyebrow">Same signature, second game</p>
         <h3 data-i18n="pattern.h3">Path Wizard — you don't move the villager, you move the world</h3>
         <p data-i18n="pattern.p">Same instinct as El Ritual, aimed at a different genre entirely. Instead of giving the player direct control over a character, Path Wizard hands them the terrain itself — rotate tiles, carve paths, teleport obstacles out of the way — and lets the villager find its own way through. The puzzle isn't movement, it's reshaping the space movement happens in.</p>
-        <div class="rule-swap">
-          <span class="from">player movement = direct control</span>
-          <span>→</span>
-          <span class="to" data-i18n="pattern.swap">the villager moves itself; the player only reshapes the terrain around it</span>
+        <div class="swap">
+          <span class="rule">player movement = direct control</span>
+          <span class="fiction" data-i18n="pattern.swap">the villager moves itself; the player only reshapes the terrain around it</span>
         </div>
-        <div class="tag-row">
+        <div class="tags">
           <span class="tag" data-i18n="pattern.tag1">Indirect Control</span>
           <span class="tag" data-i18n="pattern.tag2">Environmental Puzzle</span>
         </div>
       </div>
-    </div>
+    </article>
   </div>
 </section>
 
 <section id="juegos">
   <div class="wrap">
-    <div class="section-head">
-      <div>
-        <div class="eyebrow" data-i18n="games.eyebrow">Game Portfolio</div>
-        <h2 style="margin-top:8px" data-i18n="games.h2">8 shipped prototypes — plus Math Mobs Arena.</h2>
-      </div>
-      <p class="lede" style="margin:0" data-i18n="games.sub">Math Mobs Arena is live in closed testing on Google Play. The rest are free to play in-browser.</p>
+    <div class="head">
+      <h2 data-i18n="games.h2">8 shipped prototypes — plus Math Mobs Arena.</h2>
+      <p class="lede" data-i18n="games.sub">Math Mobs Arena is live in closed testing on Google Play. The rest are free to play in-browser.</p>
     </div>
 
-    <div class="game-grid">
-
-      <a class="card" href="https://play.google.com/apps/test/com.EmberBlast.MathMobs/2" target="_blank" rel="noopener">
-        <div class="card-art"><img src="assets/math-mobs-arena.png" alt="Math Mobs Arena"></div>
-        <div class="card-body">
-          <h3>Math Mobs Arena</h3>
-          <p class="card-role" data-i18n="g9.role">Role: solo design &amp; Unity development — AI-assisted, human-directed</p>
-          <div class="badge-row"><span class="badge" data-i18n="g9.badge">🧪 In closed testing · Google Play</span></div>
-          <p class="card-desc" data-i18n="g9.desc">A math battler for kids: solve equations mid-fight to defeat monster mobs. Free Kenney assets and some AI-generated UI — built with Claude Code in Unity under full human direction, already playtested with real kids.</p>
-          <div class="card-meta"><span data-i18n="g9.tag">Educational · Gamification</span><span class="play" data-i18n="common.play">Play ↗</span></div>
-        </div>
+    <div class="games">
+      <a class="game" href="https://play.google.com/apps/test/com.EmberBlast.MathMobs/2" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/math-mobs-arena.png" alt="Math Mobs Arena" loading="lazy"></div>
+        <h3>Math Mobs Arena</h3>
+        <p class="role" data-i18n="g9.role">Role: solo design &amp; Unity development — AI-assisted, human-directed</p>
+        <p class="award"><i class="px"></i><span data-i18n="g9.badge">In closed testing on Google Play</span></p>
+        <p class="desc" data-i18n="g9.desc">A math battler for kids: solve equations mid-fight to defeat monster mobs. Free Kenney assets and some AI-generated UI — built with Claude Code in Unity under full human direction, already playtested with real kids.</p>
+        <p class="meta"><span data-i18n="g9.tag">Educational, gamification</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
       </a>
 
-      <a class="card" href="https://emberblast.itch.io/home-bots" target="_blank" rel="noopener">
-        <div class="card-art"><img src="assets/home-bots.png" alt="Home Bots"></div>
-        <div class="card-body">
-          <h3>Home Bots</h3>
-          <p class="card-role" data-i18n="g1.role">Role: solo design &amp; Unity development</p>
-          <div class="badge-row"><span class="badge" data-i18n="g1.badge">🏆 Winner — Festival Gamer de las Flores (national TV)</span></div>
-          <p class="card-desc" data-i18n="g1.desc">Draw routes for autonomous home robots; avoid collisions and reach the destination with the least damage possible.</p>
-          <div class="card-meta"><span data-i18n="g1.tag">Puzzle · Indirect Control</span><span class="play" data-i18n="common.play">Play ↗</span></div>
-        </div>
+      <a class="game" href="https://emberblast.itch.io/home-bots" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/home-bots.png" alt="Home Bots" loading="lazy"></div>
+        <h3>Home Bots</h3>
+        <p class="role" data-i18n="g1.role">Role: solo design &amp; Unity development</p>
+        <p class="award"><i class="px"></i><span data-i18n="g1.badge">Winner, Festival Gamer de las Flores (national TV)</span></p>
+        <p class="desc" data-i18n="g1.desc">Draw routes for autonomous home robots; avoid collisions and reach the destination with the least damage possible.</p>
+        <p class="meta"><span data-i18n="g1.tag">Puzzle, indirect control</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
       </a>
 
-      <a class="card" href="https://emberblast.itch.io/el-ritual" target="_blank" rel="noopener">
-        <div class="card-art"><img src="assets/el-ritual.png" alt="El Ritual"></div>
-        <div class="card-body">
-          <h3>El Ritual</h3>
-          <p class="card-role" data-i18n="g2.role">Role: solo design &amp; Unity development — game jam</p>
-          <div class="badge-row"><span class="badge" data-i18n="g2.badge">📺 Live-reviewed on stream by Alva Majo — approved</span></div>
-          <p class="card-desc" data-i18n="g2.desc">2D action game where time is the resource: speeding up spells ages the wizard until death.</p>
-          <div class="card-meta"><span data-i18n="g2.tag">Action · Pixel Art</span><span class="play" data-i18n="common.play">Play ↗</span></div>
-        </div>
+      <a class="game" href="https://emberblast.itch.io/el-ritual" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/el-ritual.png" alt="El Ritual" loading="lazy"></div>
+        <h3>El Ritual</h3>
+        <p class="role" data-i18n="g2.role">Role: solo design &amp; Unity development — game jam</p>
+        <p class="award"><i class="px"></i><span data-i18n="g2.badge">Live-reviewed on stream by Alva Majo — approved</span></p>
+        <p class="desc" data-i18n="g2.desc">2D action game where time is the resource: speeding up spells ages the wizard until death.</p>
+        <p class="meta"><span data-i18n="g2.tag">Action, pixel art</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
       </a>
 
-      <a class="card" href="https://emberblast.itch.io/path-wizard" target="_blank" rel="noopener">
-        <div class="card-art"><img src="assets/path-wizard.png" alt="Path Wizard"></div>
-        <div class="card-body">
-          <h3>Path Wizard</h3>
-          <p class="card-role" data-i18n="g3.role">Role: solo design &amp; Unity development — game jam</p>
-          <div class="badge-row"><span class="badge" data-i18n="g3.badge">⭐ Featured on the Kenney Jam 2021 cover</span></div>
-          <p class="card-desc" data-i18n="g3.desc">A cozy wizard who reshapes terrain, teleports, and guides travelers to their destination without running out of mana.</p>
-          <div class="card-meta"><span data-i18n="g3.tag">Puzzle · Cozy</span><span class="play" data-i18n="common.play">Play ↗</span></div>
-        </div>
+      <a class="game" href="https://emberblast.itch.io/path-wizard" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/path-wizard.png" alt="Path Wizard" loading="lazy"></div>
+        <h3>Path Wizard</h3>
+        <p class="role" data-i18n="g3.role">Role: solo design &amp; Unity development — game jam</p>
+        <p class="award"><i class="px"></i><span data-i18n="g3.badge">Featured on the Kenney Jam 2021 cover</span></p>
+        <p class="desc" data-i18n="g3.desc">A cozy wizard who reshapes terrain, teleports, and guides travelers to their destination without running out of mana.</p>
+        <p class="meta"><span data-i18n="g3.tag">Puzzle, cozy</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
       </a>
 
-      <a class="card" href="https://emberblast.itch.io/pool-crown" target="_blank" rel="noopener">
-        <div class="card-art"><img src="assets/pool-crown.png" alt="Pool Crown"></div>
-        <div class="card-body">
-          <h3>POOL CROWN</h3>
-          <p class="card-role" data-i18n="g4.role">Role: solo design &amp; Unity development — game jam</p>
-          <div class="badge-row"><span class="badge" data-i18n="g4.badge">🏆 1st place — Great Summer Game Jam 2021</span></div>
-          <p class="card-desc" data-i18n="g4.desc">Survive 3 minutes without getting wet. One rule, instantly playable — no metagame required.</p>
-          <div class="card-meta"><span data-i18n="g4.tag">Arcade Shooter</span><span class="play" data-i18n="common.play">Play ↗</span></div>
-        </div>
+      <a class="game" href="https://emberblast.itch.io/pool-crown" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/pool-crown.png" alt="Pool Crown" loading="lazy"></div>
+        <h3>Pool Crown</h3>
+        <p class="role" data-i18n="g4.role">Role: solo design &amp; Unity development — game jam</p>
+        <p class="award"><i class="px"></i><span data-i18n="g4.badge">1st place, Great Summer Game Jam 2021</span></p>
+        <p class="desc" data-i18n="g4.desc">Survive 3 minutes without getting wet. One rule, instantly playable — no metagame required.</p>
+        <p class="meta"><span data-i18n="g4.tag">Arcade shooter</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
       </a>
 
-      <a class="card" href="https://emberblast.itch.io/graveyard-scavenger" target="_blank" rel="noopener">
-        <div class="card-art"><img src="assets/graveyard-scavenger.png" alt="Graveyard Scavenger"></div>
-        <div class="card-body">
-          <h3>Graveyard Scavenger</h3>
-          <p class="card-role" data-i18n="g5.role">Role: solo design &amp; Unity development — game jam</p>
-          <p class="card-desc" data-i18n="g5.desc">Arrows exist in the world: pick them up off the ground or deflect them with your sword mid-combat.</p>
-          <div class="card-meta"><span data-i18n="g5.tag">Action · Top-down</span><span class="play" data-i18n="common.play">Play ↗</span></div>
-        </div>
+      <a class="game" href="https://emberblast.itch.io/graveyard-scavenger" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/graveyard-scavenger.png" alt="Graveyard Scavenger" loading="lazy"></div>
+        <h3>Graveyard Scavenger</h3>
+        <p class="role" data-i18n="g5.role">Role: solo design &amp; Unity development — game jam</p>
+        <p class="desc" data-i18n="g5.desc">Arrows exist in the world: pick them up off the ground or deflect them with your sword mid-combat.</p>
+        <p class="meta"><span data-i18n="g5.tag">Action, top-down</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
       </a>
 
-      <a class="card" href="https://emberblast.itch.io/the-plague-doctor" target="_blank" rel="noopener">
-        <div class="card-art"><img src="assets/plague-doctor.png" alt="The Plague Doctor"></div>
-        <div class="card-body">
-          <h3>The Plague Doctor</h3>
-          <p class="card-role" data-i18n="g6.role">Role: solo design &amp; Unity development</p>
-          <p class="card-desc" data-i18n="g6.desc">A plague turns everyone it infects aggressive. The player is the doctor sent to contain it.</p>
-          <div class="card-meta"><span data-i18n="g6.tag">Action · Pixel Art</span><span class="play" data-i18n="common.play">Play ↗</span></div>
-        </div>
+      <a class="game" href="https://emberblast.itch.io/the-plague-doctor" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/plague-doctor.png" alt="The Plague Doctor" loading="lazy"></div>
+        <h3>The Plague Doctor</h3>
+        <p class="role" data-i18n="g6.role">Role: solo design &amp; Unity development</p>
+        <p class="desc" data-i18n="g6.desc">A plague turns everyone it infects aggressive. The player is the doctor sent to contain it.</p>
+        <p class="meta"><span data-i18n="g6.tag">Action, pixel art</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
       </a>
 
-      <a class="card" href="https://emberblast.itch.io/sails-of-freedom" target="_blank" rel="noopener">
-        <div class="card-art"><img src="assets/sails-of-freedom.jpg" alt="Sails of Freedom"></div>
-        <div class="card-body">
-          <h3>Sails of Freedom</h3>
-          <p class="card-role" data-i18n="g7.role">Role: solo design &amp; Unity development — 1-week challenge</p>
-          <p class="card-desc" data-i18n="g7.desc">3D voxel game made in one week (1 Game 1 Week): Katla escapes pirates alongside his brother.</p>
-          <div class="card-meta"><span data-i18n="g7.tag">Action · Voxel</span><span class="play" data-i18n="common.play">Play ↗</span></div>
-        </div>
+      <a class="game" href="https://emberblast.itch.io/sails-of-freedom" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/sails-of-freedom.jpg" alt="Sails of Freedom" loading="lazy"></div>
+        <h3>Sails of Freedom</h3>
+        <p class="role" data-i18n="g7.role">Role: solo design &amp; Unity development — 1-week challenge</p>
+        <p class="desc" data-i18n="g7.desc">3D voxel game made in one week (1 Game 1 Week): Katla escapes pirates alongside his brother.</p>
+        <p class="meta"><span data-i18n="g7.tag">Action, voxel</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
       </a>
 
-      <a class="card" href="https://emberblast.itch.io/dawn-of-rektwood" target="_blank" rel="noopener">
-        <div class="card-art"><img src="assets/dawn-of-rektwood.jpg" alt="Dawn Of Rektwood"></div>
-        <div class="card-body">
-          <h3>Dawn Of Rektwood</h3>
-          <p class="card-role" data-i18n="g8.role">Role: game design &amp; Unity development (team of 3 — 2 friends on graphics &amp; animation)</p>
-          <p class="card-desc" data-i18n="g8.desc">2D tower defense: guardian spirits defend the Rektwood forest from a mechanical invasion.</p>
-          <div class="card-meta"><span data-i18n="g8.tag">Strategy · TD</span><span class="play" data-i18n="common.play">Play ↗</span></div>
-        </div>
+      <a class="game" href="https://emberblast.itch.io/dawn-of-rektwood" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/dawn-of-rektwood.jpg" alt="Dawn Of Rektwood" loading="lazy"></div>
+        <h3>Dawn of Rektwood</h3>
+        <p class="role" data-i18n="g8.role">Role: game design &amp; Unity development (team of 3 — 2 friends on graphics &amp; animation)</p>
+        <p class="desc" data-i18n="g8.desc">2D tower defense: guardian spirits defend the Rektwood forest from a mechanical invasion.</p>
+        <p class="meta"><span data-i18n="g8.tag">Strategy, tower defense</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
       </a>
-
     </div>
   </div>
 </section>
 
 <section id="now">
   <div class="wrap">
-    <div class="section-head">
-      <div><div class="eyebrow" data-i18n="now.eyebrow">Beyond the Prototypes</div><h2 style="margin-top:8px" data-i18n="now.h2">Dabloons: Guild of Travellers</h2></div>
-    </div>
-    <div class="now-card">
-      <div class="now-status" data-i18n="now.status">ON HOLD — STEAM PAGE &amp; WISHLIST IN PROGRESS</div>
-      <div class="now-body">
-        <div class="case-meta" data-i18n="now.meta">CO-OP ROGUELITE · STEAM · UNITY / C#</div>
+    <div class="held">
+      <div style="display:flex; flex-direction:column; gap:22px">
+        <h2 data-i18n="now.h2">Dabloons: Guild of Travellers</h2>
+        <span class="status" data-i18n="now.status">On hold — Steam page and wishlist in progress</span>
+      </div>
+      <div class="copy">
+        <p class="meta" data-i18n="now.meta">Co-op roguelite for Steam, built in Unity / C#</p>
         <h3 data-i18n="now.title">A cat, a guild, and a TikTok trend that asked for this exact game.</h3>
         <p data-i18n="now.p">Guild of Travellers started from the "Dabloon Cat" trend on TikTok: you play a cat gathering Dabloons to upgrade your guild's base — a co-op roguelite built for the exact game that trend's audience was asking for. The Steam page is paid for and a wishlist landing page is in progress; development is on hold for now, but the devlogs below are real, and the build is 100% hand-coded in Unity/C# — built before AI-assisted workflows were part of how I work.</p>
-        <div class="tag-row">
+        <div class="tags">
           <span class="tag" data-i18n="now.tag1">Viral-to-Playable</span>
           <span class="tag" data-i18n="now.tag2">Co-op Roguelite</span>
           <span class="tag" data-i18n="now.tag3">Hand-coded Unity/C#</span>
         </div>
+        <div class="cta-row"><a class="btn" href="https://www.tiktok.com/@emberblastt" target="_blank" rel="noopener"><span data-i18n="now.cta">Watch the devlogs on TikTok</span><svg class="i"><use href="#i-out"/></svg></a></div>
       </div>
-      <a class="btn btn-primary" href="https://www.tiktok.com/@emberblastt" target="_blank" rel="noopener" data-i18n="now.cta">Watch the devlogs on TikTok ↗</a>
     </div>
   </div>
 </section>
 
 <section id="experiencia">
   <div class="wrap">
-    <div class="section-head">
-      <div>
-        <div class="eyebrow" data-i18n="exp.eyebrow">Experience</div>
-        <h2 style="margin-top:8px" data-i18n="exp.h2">From small studios to technical leadership.</h2>
-      </div>
+    <div class="head">
+      <h2 data-i18n="exp.h2">From small studios to technical leadership.</h2>
     </div>
 
-    <div class="timeline">
-      <div class="tl-item">
-        <div class="tl-head"><h3 data-i18n="tl1.title">Founder &amp; Indie Game Developer</h3><span class="tl-date">2018 — Present</span></div>
-        <div class="tl-org" data-i18n="tl1.org">EmberBlast · Independent</div>
+    <ol class="rail">
+      <li class="job" style="--heat:var(--h5)">
+        <h3 data-i18n="tl1.title">Founder &amp; Indie Game Developer</h3><span class="when" data-i18n="tl1.when">2018 — Present</span>
+        <p class="org" data-i18n="tl1.org">EmberBlast, independent</p>
         <p data-i18n="tl1.desc">End-to-end production of 8 games for PC and mobile: design, programming, UI, build, and release. Grew a community of 20,000+ followers through devlogs.</p>
-      </div>
-      <div class="tl-item">
-        <div class="tl-head"><h3 data-i18n="tl2.title">Video Game Designer</h3><span class="tl-date">Jun — Aug 2026</span></div>
-        <div class="tl-org" data-i18n="tl2.org">indie.io (Freedom Games) · Freelance, remote</div>
+      </li>
+      <li class="job" style="--heat:var(--h4)">
+        <h3 data-i18n="tl2.title">Video Game Designer</h3><span class="when" data-i18n="tl2.when">Jun — Aug 2026</span>
+        <p class="org" data-i18n="tl2.org">indie.io (Freedom Games), freelance, remote</p>
         <p data-i18n="tl2.desc">Design review across an internal 7-title portfolio (strategy, roguelite, cozy sim, sci-fi, colony management). Designed and deployed an AI design assistant (Claude + MCP) integrated into Slack to speed up design documentation.</p>
-      </div>
-      <div class="tl-item">
-        <div class="tl-head"><h3 data-i18n="tl3.title">Interactive Software Developer — Unity</h3><span class="tl-date">Jan 2025 — May 2026</span></div>
-        <div class="tl-org" data-i18n="tl3.org">Alternova Inc. · Full-time</div>
+      </li>
+      <li class="job" style="--heat:var(--h4)">
+        <h3 data-i18n="tl3.title">Interactive Software Developer — Unity</h3><span class="when" data-i18n="tl3.when">Jan 2025 — May 2026</span>
+        <p class="org" data-i18n="tl3.org">Alternova Inc., full-time</p>
         <p data-i18n="tl3.desc">Development and maintenance of mobile and interactive apps in Unity/C#. Refactored legacy code, modular SOLID architecture, AI/MCP workflows integrated into the team's pipeline.</p>
-      </div>
-      <div class="tl-item">
-        <div class="tl-head"><h3 data-i18n="tl4.title">Level Designer</h3><span class="tl-date">Jul — Aug 2024</span></div>
-        <div class="tl-org" data-i18n="tl4.org">KikiriCompany · Freelance, remote</div>
+      </li>
+      <li class="job" style="--heat:var(--h3)">
+        <h3 data-i18n="tl4.title">Level Designer</h3><span class="when" data-i18n="tl4.when">Jul — Aug 2024</span>
+        <p class="org" data-i18n="tl4.org">KikiriCompany, freelance, remote</p>
         <p data-i18n="tl4.desc">Designed and implemented campaign levels for <i>Blaze of Empires</i> (mobile), tuning pace and difficulty from playtest data.</p>
-        <div class="case-block">
-          <div class="case-media">
-            <img src="assets/blaze-1.jpg" alt="Blaze of Empires campaign gameplay, skirmish on a forest map">
-            <img src="assets/blaze-2.jpg" alt="Blaze of Empires campaign gameplay, village under siege">
-            <img src="assets/blaze-3.jpg" alt="Blaze of Empires campaign gameplay, large-scale army battle">
-          </div>
-          <div class="case-body">
-            <div class="case-meta" data-i18n="case.meta">BLAZE OF EMPIRES · MOBILE STRATEGY · UNITY</div>
-            <h3 data-i18n="case.h3">Campaign level design, end to end</h3>
-            <p data-i18n="case.p">Designed and implemented campaign levels using Unity and the studio's internal editor tooling — building gameplay scenarios tuned for pacing and difficulty progression across the campaign arc, then iterating on levels from playtest feedback.</p>
-          </div>
+        <div class="blaze">
+          <img src="assets/blaze-1.jpg" alt="Blaze of Empires campaign gameplay, skirmish on a forest map" loading="lazy">
+          <img src="assets/blaze-2.jpg" alt="Blaze of Empires campaign gameplay, village under siege" loading="lazy">
+          <img src="assets/blaze-3.jpg" alt="Blaze of Empires campaign gameplay, large-scale army battle" loading="lazy">
         </div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-head"><h3 data-i18n="tl5.title">Game Programmer</h3><span class="tl-date">Jan 2023 — Feb 2024</span></div>
-        <div class="tl-org" data-i18n="tl5.org">Streamline Studios · Full-time</div>
+        <div class="blaze-note">
+          <span data-i18n="case.meta">Blaze of Empires, mobile strategy in Unity</span>
+          <b data-i18n="case.h3">Campaign level design, end to end</b>
+          <p data-i18n="case.p">Designed and implemented campaign levels using Unity and the studio's internal editor tooling — building gameplay scenarios tuned for pacing and difficulty progression across the campaign arc, then iterating on levels from playtest feedback.</p>
+        </div>
+      </li>
+      <li class="job" style="--heat:var(--h2)">
+        <h3 data-i18n="tl5.title">Game Programmer</h3><span class="when" data-i18n="tl5.when">Jan 2023 — Feb 2024</span>
+        <p class="org" data-i18n="tl5.org">Streamline Studios, full-time</p>
         <p data-i18n="tl5.desc">Playable prototypes and interactive systems in Unity; VR experiences in Unreal Engine 5 (Blueprints + C++). Technical documentation (GDDs/TDDs).</p>
-      </div>
-      <div class="tl-item">
-        <div class="tl-head"><h3 data-i18n="tl6.title">Video Game Team Lead</h3><span class="tl-date">Feb — Dec 2022</span></div>
-        <div class="tl-org">Metaskins Studios · Medellín</div>
+      </li>
+      <li class="job" style="--heat:var(--h1)">
+        <h3 data-i18n="tl6.title">Video Game Team Lead</h3><span class="when" data-i18n="tl6.when">Feb — Dec 2022</span>
+        <p class="org">Metaskins Studios, Medellín</p>
         <p data-i18n="tl6.desc">Led multidisciplinary teams (UI/UX, 2D/3D art, animation) across metaverse, blockchain, and real-time interactive projects.</p>
-      </div>
-      <div class="tl-item">
-        <div class="tl-head"><h3 data-i18n="tl7.title">Game Developer</h3><span class="tl-date">2019 — 2022</span></div>
-        <div class="tl-org">Idioma+ · Geta Club Play · Joycom Games · DreamHouse Studios</div>
+      </li>
+      <li class="job" style="--heat:var(--steel-dim)">
+        <h3 data-i18n="tl7.title">Game Developer</h3><span class="when">2019 — 2022</span>
+        <p class="org">Idioma+, Geta Club Play, Joycom Games, DreamHouse Studios</p>
         <p data-i18n="tl7.desc">3D educational RPG, mobile minigames for children, the arcade racer <i>Eco Troopers Natural Racing</i>, and VR experiences for HTC Vive — the foundation of 6 years designing and programming in Unity.</p>
-      </div>
-    </div>
+      </li>
+    </ol>
   </div>
 </section>
 
 <section id="habilidades">
   <div class="wrap">
-    <div class="section-head">
-      <div><div class="eyebrow" data-i18n="skills.eyebrow">Stack</div><h2 style="margin-top:8px" data-i18n="skills.h2">Tools &amp; Skills</h2></div>
+    <div class="head">
+      <h2 data-i18n="skills.h2">Tools &amp; Skills</h2>
     </div>
-    <div class="skill-grid">
-      <div class="skill-col">
+    <div class="skills">
+      <div>
         <h3 data-i18n="col1.h">Design</h3>
         <ul>
           <li data-i18n="col1.li1">Game &amp; Systems Design</li>
@@ -637,7 +665,7 @@ footer{border-top:1px solid var(--line); padding-block:46px 40px; background:var
           <li data-i18n="col1.li6">GDD / TDD</li>
         </ul>
       </div>
-      <div class="skill-col">
+      <div>
         <h3 data-i18n="col2.h">Development</h3>
         <ul>
           <li data-i18n="col2.li1">Unity (URP, Addressables, ScriptableObjects, Animator, Timeline)</li>
@@ -647,7 +675,7 @@ footer{border-top:1px solid var(--line); padding-block:46px 40px; background:var
           <li data-i18n="col2.li5">SOLID, Modular Architecture</li>
         </ul>
       </div>
-      <div class="skill-col">
+      <div>
         <h3 data-i18n="col3.h">Production &amp; AI</h3>
         <ul>
           <li data-i18n="col3.li1">Claude Code, MCP workflows</li>
@@ -663,34 +691,28 @@ footer{border-top:1px solid var(--line); padding-block:46px 40px; background:var
 
 <section id="mods">
   <div class="wrap">
-    <div class="section-head">
-      <div>
-        <div class="eyebrow" data-i18n="mods.eyebrow">Minecraft Add-ons</div>
-        <h2 style="margin-top:8px" data-i18n="mods.h2">Piglin Bodyguard — a companion that can lose itself to neglect</h2>
-      </div>
+    <div class="head">
+      <h2 data-i18n="mods.h2">Piglin Bodyguard — a companion that can lose itself to neglect</h2>
     </div>
-    <div class="feature">
-      <div class="feature-art">
-        <img src="assets/piglin-bodyguard.png" alt="Piglin Bodyguard addon icon, a piglin in gold armor">
-        <span class="feature-tag">Minecraft Bedrock · CurseForge · Behavior + Resource Pack</span>
-      </div>
-      <div class="feature-body">
+    <article class="case square">
+      <figure>
+        <div class="art"><img src="assets/piglin-bodyguard.png" alt="Piglin Bodyguard addon icon, a piglin in gold armor" loading="lazy"></div>
+        <figcaption><span>Minecraft Bedrock</span><span>CurseForge</span><span data-i18n="mods.packs">Behavior + resource pack</span></figcaption>
+      </figure>
+      <div class="case-body">
         <p data-i18n="mods.p">A companion addon for Minecraft Bedrock: craft a summoning book and a piglin ally joins you through caves, oceans, and Nether portals. It fights with melee, bows, or crossbows, blocks with a shield, and grows stronger from kills — reaching Piglin Brute at level 10. Built AI-assisted with Claude Code, every system and rule under full human direction — live and downloadable on CurseForge.</p>
-        <div class="rule-swap">
-          <span class="from">companion loyalty = invisible stat</span>
-          <span>→</span>
-          <span class="to" data-i18n="mods.swap">neglect it too long outside the Nether, and it zombifies</span>
+        <div class="swap">
+          <span class="rule">companion loyalty = invisible stat</span>
+          <span class="fiction" data-i18n="mods.swap">neglect it too long outside the Nether, and it zombifies</span>
         </div>
-        <div class="tag-row">
+        <div class="tags">
           <span class="tag" data-i18n="mods.tag1">Companion AI</span>
           <span class="tag" data-i18n="mods.tag2">Diegetic Consequence</span>
           <span class="tag" data-i18n="mods.tag3">AI-Assisted Dev</span>
         </div>
-        <div class="cta-row" style="margin-top:4px">
-          <a class="btn btn-ghost" href="https://www.curseforge.com/minecraft-bedrock/addons/piglin-bodyguard" target="_blank" rel="noopener" data-i18n="mods.cta">Get it on CurseForge ↗</a>
-        </div>
+        <div class="cta-row"><a class="btn" href="https://www.curseforge.com/minecraft-bedrock/addons/piglin-bodyguard" target="_blank" rel="noopener"><span data-i18n="mods.cta">Get it on CurseForge</span><svg class="i"><use href="#i-out"/></svg></a></div>
       </div>
-    </div>
+    </article>
   </div>
 </section>
 
@@ -698,19 +720,16 @@ footer{border-top:1px solid var(--line); padding-block:46px 40px; background:var
 
 <footer id="contacto">
   <div class="wrap">
-    <div class="contact-grid">
-      <div>
-        <div class="eyebrow" data-i18n="footer.eyebrow">Contact</div>
-        <h2 style="margin-top:10px; font-size:clamp(24px,4vw,36px)" data-i18n="footer.h2">Let's build something playable.</h2>
-        <p class="lede" style="margin-top:10px">jdyepes@hotmail.com · +57 321 830 4596 · Medellín, Colombia</p>
-      </div>
-      <div class="foot-links">
-        <a class="btn btn-primary" href="mailto:jdyepes@hotmail.com" data-i18n="footer.cta">Send an email</a>
-        <a class="btn btn-ghost" href="https://www.linkedin.com/in/jose-david-yepes-arango-3232a4126/" target="_blank" rel="noopener">LinkedIn ↗</a>
-        <a class="btn btn-ghost" href="https://emberblast.itch.io/" target="_blank" rel="noopener">itch.io ↗</a>
-      </div>
+    <h2 class="end" data-i18n="footer.h2">Let's build something playable.</h2>
+    <a class="mail" href="mailto:jdyepes@hotmail.com">jdyepes@hotmail.com</a>
+    <p class="contact-line">+57 321 830 4596 <span aria-hidden="true">/</span> Medellín, Colombia</p>
+    <div class="foot-links">
+      <a class="btn btn-hot" href="mailto:jdyepes@hotmail.com"><svg class="i"><use href="#i-mail"/></svg><span data-i18n="footer.cta">Send an email</span></a>
+      <a class="btn" href="https://www.linkedin.com/in/jose-david-yepes-arango-3232a4126/" target="_blank" rel="noopener">LinkedIn<svg class="i"><use href="#i-out"/></svg></a>
+      <a class="btn" href="https://emberblast.itch.io/" target="_blank" rel="noopener">itch.io<svg class="i"><use href="#i-out"/></svg></a>
+      <a class="btn" href="https://www.tiktok.com/@emberblastt" target="_blank" rel="noopener">TikTok<svg class="i"><use href="#i-out"/></svg></a>
     </div>
-    <div class="copy" data-i18n="footer.copy">EmberBlast — Jose David Yepes Arango. Portfolio updated 2026.</div>
+    <div class="colophon"><span data-i18n="footer.copy">EmberBlast — Jose David Yepes Arango. Portfolio updated 2026.</span></div>
   </div>
 </footer>
 
@@ -718,147 +737,141 @@ footer{border-top:1px solid var(--line); padding-block:46px 40px; background:var
 var I18N = {
   en: {
     "nav.games":"Games", "nav.about":"About", "nav.exp":"Experience", "nav.skills":"Skills", "nav.contact":"Contact",
-    "hero.loc":"MEDELLÍN, COLOMBIA", "hero.remote":"REMOTE / OPEN TO RELOCATION", "hero.status":"AVAILABLE",
-    "hero.h1b":"— Game Designer & Unity Developer.",
-    "hero.sub":"6+ years designing and building games. Founder of EmberBlast: 8 shipped prototypes across different genres, unified by one idea — turning a system rule into part of the fiction.",
-    "hero.cta1":"Play on itch.io ↗",
-    "stat.years":"Years of experience", "stat.games":"Games shipped", "stat.studios":"Jam wins & features", "stat.followers":"Followers (devlogs)",
-    "about.eyebrow":"About", "about.h2":"Design and engineering under one roof.",
+    "hero.loc":"Medellín, Colombia", "hero.remote":"Remote or open to relocation", "hero.status":"Available for work",
+    "hero.h1b":"Game Designer & Unity Developer",
+    "hero.sub":"6+ years designing and building games. Founder of <b>EmberBlast</b>: 8 shipped prototypes across different genres, unified by one idea — turning a system rule into part of the fiction.",
+    "hero.cta1":"Play my games on itch.io",
+    "hero.hint":"Run your cursor through the embers", "hero.hintTouch":"Drag your finger through the embers",
+    "stat.years":"Years of experience", "stat.games":"Games shipped", "stat.studios":"Jam wins & features", "stat.followers":"Followers on my devlogs",
+    "about.h2":"Design and engineering under one roof.",
     "about.p":"I'm an Engineer in Digital Entertainment Design (UPB, Medellín) working across Game Designer and Unity Developer roles — I design systems and build them myself, which shortens the distance between \"what if…\" and a playable prototype. I've led multidisciplinary teams, reviewed design across a 7-title studio portfolio as a freelance designer, and built internal AI-assisted tooling (Claude + MCP) to speed up design documentation and review.",
     "about.callout":"The design signature that repeats across my prototypes: take a familiar videogame abstraction and make it diegetic — let the fiction explain the rule, not the other way around. My favorite example is below.",
     "pillar1.h":"Systems over features", "pillar1.p":"I prefer a few rules that interact over many isolated features. A good system creates more than one consequence.",
     "pillar2.h":"Fast prototype, fast decision", "pillar2.p":"Jams, one-week challenges, playable builds in days. Design questions get answered by playing, not debating.",
     "pillar3.h":"AI as infrastructure, not autocomplete", "pillar3.p":"I build workflows with Claude Code and MCP for documentation, review, and design memory — not just text generation.",
-    "feat.eyebrow":"Design Case Study", "feat.h2":"El Ritual — when the cooldown becomes lethal",
+    "feat.h2":"El Ritual — when the cooldown becomes lethal",
     "feat.h3":"Magic is cursed: a spell can only be cast once every thirty years.",
     "feat.p":"The player protects the masters of three magic schools — Fire, Ice, and Darkness — while they complete a forbidden ritual. Time crystals speed up spell reuse, but at the cost of aging the wizard in real time: one second of crystal time equals one year of life. Abusing the resource can literally kill the character of old age.",
     "feat.swap":"a spell takes thirty years to recharge, and manipulating time ages the character",
-    "feat.tag1":"Risk / Reward", "feat.tag2":"Diegetic Resource", "feat.tag3":"Theme = Mechanic", "feat.cta":"Play El Ritual ↗",
-    "pattern.eyebrow":"Same Signature, Second Game", "pattern.h3":"Path Wizard — you don't move the villager, you move the world",
+    "feat.tag1":"Risk / Reward", "feat.tag2":"Diegetic Resource", "feat.tag3":"Theme = Mechanic", "feat.cta":"Play El Ritual",
+    "pattern.eyebrow":"Same signature, second game", "pattern.h3":"Path Wizard — you don't move the villager, you move the world",
     "pattern.p":"Same instinct as El Ritual, aimed at a different genre entirely. Instead of giving the player direct control over a character, Path Wizard hands them the terrain itself — rotate tiles, carve paths, teleport obstacles out of the way — and lets the villager find its own way through. The puzzle isn't movement, it's reshaping the space movement happens in.",
     "pattern.swap":"the villager moves itself; the player only reshapes the terrain around it",
     "pattern.tag1":"Indirect Control", "pattern.tag2":"Environmental Puzzle",
-    "mods.eyebrow":"Minecraft Add-ons", "mods.h2":"Piglin Bodyguard — a companion that can lose itself to neglect",
+    "mods.h2":"Piglin Bodyguard — a companion that can lose itself to neglect", "mods.packs":"Behavior + resource pack",
     "mods.p":"A companion addon for Minecraft Bedrock: craft a summoning book and a piglin ally joins you through caves, oceans, and Nether portals. It fights with melee, bows, or crossbows, blocks with a shield, and grows stronger from kills — reaching Piglin Brute at level 10. Built AI-assisted with Claude Code, every system and rule under full human direction — live and downloadable on CurseForge.",
     "mods.swap":"neglect it too long outside the Nether, and it zombifies",
-    "mods.tag1":"Companion AI", "mods.tag2":"Diegetic Consequence", "mods.tag3":"AI-Assisted Dev", "mods.cta":"Get it on CurseForge ↗",
-    "games.eyebrow":"Game Portfolio", "games.h2":"8 shipped prototypes — plus Math Mobs Arena.",
+    "mods.tag1":"Companion AI", "mods.tag2":"Diegetic Consequence", "mods.tag3":"AI-Assisted Dev", "mods.cta":"Get it on CurseForge",
+    "games.h2":"8 shipped prototypes — plus Math Mobs Arena.",
     "games.sub":"Math Mobs Arena is live in closed testing on Google Play. The rest are free to play in-browser.",
-    "common.play":"Play ↗",
-    "g1.role":"Role: solo design & Unity development", "g1.badge":"🏆 Winner — Festival Gamer de las Flores (national TV)", "g1.desc":"Draw routes for autonomous home robots; avoid collisions and reach the destination with the least damage possible.", "g1.tag":"Puzzle · Indirect Control",
-    "g2.role":"Role: solo design & Unity development — game jam", "g2.badge":"📺 Live-reviewed on stream by Alva Majo — approved", "g2.desc":"2D action game where time is the resource: speeding up spells ages the wizard until death.", "g2.tag":"Action · Pixel Art",
-    "g3.role":"Role: solo design & Unity development — game jam", "g3.badge":"⭐ Featured on the Kenney Jam 2021 cover", "g3.desc":"A cozy wizard who reshapes terrain, teleports, and guides travelers to their destination without running out of mana.", "g3.tag":"Puzzle · Cozy",
-    "g4.role":"Role: solo design & Unity development — game jam", "g4.badge":"🏆 1st place — Great Summer Game Jam 2021", "g4.desc":"Survive 3 minutes without getting wet. One rule, instantly playable — no metagame required.", "g4.tag":"Arcade Shooter",
-    "now.eyebrow":"Beyond the Prototypes", "now.h2":"Dabloons: Guild of Travellers", "now.status":"ON HOLD — STEAM PAGE & WISHLIST IN PROGRESS",
-    "now.meta":"CO-OP ROGUELITE · STEAM · UNITY / C#", "now.title":"A cat, a guild, and a TikTok trend that asked for this exact game.",
+    "common.play":"Play",
+    "g1.role":"Role: solo design & Unity development", "g1.badge":"Winner, Festival Gamer de las Flores (national TV)", "g1.desc":"Draw routes for autonomous home robots; avoid collisions and reach the destination with the least damage possible.", "g1.tag":"Puzzle, indirect control",
+    "g2.role":"Role: solo design & Unity development — game jam", "g2.badge":"Live-reviewed on stream by Alva Majo — approved", "g2.desc":"2D action game where time is the resource: speeding up spells ages the wizard until death.", "g2.tag":"Action, pixel art",
+    "g3.role":"Role: solo design & Unity development — game jam", "g3.badge":"Featured on the Kenney Jam 2021 cover", "g3.desc":"A cozy wizard who reshapes terrain, teleports, and guides travelers to their destination without running out of mana.", "g3.tag":"Puzzle, cozy",
+    "g4.role":"Role: solo design & Unity development — game jam", "g4.badge":"1st place, Great Summer Game Jam 2021", "g4.desc":"Survive 3 minutes without getting wet. One rule, instantly playable — no metagame required.", "g4.tag":"Arcade shooter",
+    "now.h2":"Dabloons: Guild of Travellers", "now.status":"On hold — Steam page and wishlist in progress",
+    "now.meta":"Co-op roguelite for Steam, built in Unity / C#", "now.title":"A cat, a guild, and a TikTok trend that asked for this exact game.",
     "now.p":"Guild of Travellers started from the \"Dabloon Cat\" trend on TikTok: you play a cat gathering Dabloons to upgrade your guild's base — a co-op roguelite built for the exact game that trend's audience was asking for. The Steam page is paid for and a wishlist landing page is in progress; development is on hold for now, but the devlogs below are real, and the build is 100% hand-coded in Unity/C# — built before AI-assisted workflows were part of how I work.",
-    "now.tag1":"Viral-to-Playable", "now.tag2":"Co-op Roguelite", "now.tag3":"Hand-coded Unity/C#", "now.cta":"Watch the devlogs on TikTok ↗",
-    "case.meta":"BLAZE OF EMPIRES · MOBILE STRATEGY · UNITY", "case.h3":"Campaign level design, end to end",
+    "now.tag1":"Viral-to-Playable", "now.tag2":"Co-op Roguelite", "now.tag3":"Hand-coded Unity/C#", "now.cta":"Watch the devlogs on TikTok",
+    "case.meta":"Blaze of Empires, mobile strategy in Unity", "case.h3":"Campaign level design, end to end",
     "case.p":"Designed and implemented campaign levels using Unity and the studio's internal editor tooling — building gameplay scenarios tuned for pacing and difficulty progression across the campaign arc, then iterating on levels from playtest feedback.",
-    "g5.role":"Role: solo design & Unity development — game jam", "g5.desc":"Arrows exist in the world: pick them up off the ground or deflect them with your sword mid-combat.", "g5.tag":"Action · Top-down",
-    "g6.role":"Role: solo design & Unity development", "g6.desc":"A plague turns everyone it infects aggressive. The player is the doctor sent to contain it.", "g6.tag":"Action · Pixel Art",
-    "g7.role":"Role: solo design & Unity development — 1-week challenge", "g7.desc":"3D voxel game made in one week (1 Game 1 Week): Katla escapes pirates alongside his brother.", "g7.tag":"Action · Voxel",
-    "g8.role":"Role: game design & Unity development (team of 3 — 2 friends on graphics & animation)", "g8.desc":"2D tower defense: guardian spirits defend the Rektwood forest from a mechanical invasion.", "g8.tag":"Strategy · TD",
-    "g9.role":"Role: solo design & Unity development — AI-assisted, human-directed", "g9.badge":"🧪 In closed testing · Google Play",
+    "g5.role":"Role: solo design & Unity development — game jam", "g5.desc":"Arrows exist in the world: pick them up off the ground or deflect them with your sword mid-combat.", "g5.tag":"Action, top-down",
+    "g6.role":"Role: solo design & Unity development", "g6.desc":"A plague turns everyone it infects aggressive. The player is the doctor sent to contain it.", "g6.tag":"Action, pixel art",
+    "g7.role":"Role: solo design & Unity development — 1-week challenge", "g7.desc":"3D voxel game made in one week (1 Game 1 Week): Katla escapes pirates alongside his brother.", "g7.tag":"Action, voxel",
+    "g8.role":"Role: game design & Unity development (team of 3 — 2 friends on graphics & animation)", "g8.desc":"2D tower defense: guardian spirits defend the Rektwood forest from a mechanical invasion.", "g8.tag":"Strategy, tower defense",
+    "g9.role":"Role: solo design & Unity development — AI-assisted, human-directed", "g9.badge":"In closed testing on Google Play",
     "g9.desc":"A math battler for kids: solve equations mid-fight to defeat monster mobs. Free Kenney assets and some AI-generated UI — built with Claude Code in Unity under full human direction, already playtested with real kids.",
-    "g9.tag":"Educational · Gamification",
-    "exp.eyebrow":"Experience", "exp.h2":"From small studios to technical leadership.",
-    "tl1.title":"Founder & Indie Game Developer", "tl1.org":"EmberBlast · Independent", "tl1.desc":"End-to-end production of 8 games for PC and mobile: design, programming, UI, build, and release. Grew a community of 20,000+ followers through devlogs.",
-    "tl2.title":"Video Game Designer", "tl2.org":"indie.io (Freedom Games) · Freelance, remote", "tl2.desc":"Design review across an internal 7-title portfolio (strategy, roguelite, cozy sim, sci-fi, colony management). Designed and deployed an AI design assistant (Claude + MCP) integrated into Slack to speed up design documentation.",
-    "tl3.title":"Interactive Software Developer — Unity", "tl3.org":"Alternova Inc. · Full-time", "tl3.desc":"Development and maintenance of mobile and interactive apps in Unity/C#. Refactored legacy code, modular SOLID architecture, AI/MCP workflows integrated into the team's pipeline.",
-    "tl4.title":"Level Designer", "tl4.org":"KikiriCompany · Freelance, remote", "tl4.desc":"Designed and implemented campaign levels for <i>Blaze of Empires</i> (mobile), tuning pace and difficulty from playtest data.",
-    "tl5.title":"Game Programmer", "tl5.org":"Streamline Studios · Full-time", "tl5.desc":"Playable prototypes and interactive systems in Unity; VR experiences in Unreal Engine 5 (Blueprints + C++). Technical documentation (GDDs/TDDs).",
-    "tl6.title":"Video Game Team Lead", "tl6.desc":"Led multidisciplinary teams (UI/UX, 2D/3D art, animation) across metaverse, blockchain, and real-time interactive projects.",
+    "g9.tag":"Educational, gamification",
+    "exp.h2":"From small studios to technical leadership.",
+    "tl1.title":"Founder & Indie Game Developer", "tl1.when":"2018 — Present", "tl1.org":"EmberBlast, independent", "tl1.desc":"End-to-end production of 8 games for PC and mobile: design, programming, UI, build, and release. Grew a community of 20,000+ followers through devlogs.",
+    "tl2.title":"Video Game Designer", "tl2.when":"Jun — Aug 2026", "tl2.org":"indie.io (Freedom Games), freelance, remote", "tl2.desc":"Design review across an internal 7-title portfolio (strategy, roguelite, cozy sim, sci-fi, colony management). Designed and deployed an AI design assistant (Claude + MCP) integrated into Slack to speed up design documentation.",
+    "tl3.title":"Interactive Software Developer — Unity", "tl3.when":"Jan 2025 — May 2026", "tl3.org":"Alternova Inc., full-time", "tl3.desc":"Development and maintenance of mobile and interactive apps in Unity/C#. Refactored legacy code, modular SOLID architecture, AI/MCP workflows integrated into the team's pipeline.",
+    "tl4.title":"Level Designer", "tl4.when":"Jul — Aug 2024", "tl4.org":"KikiriCompany, freelance, remote", "tl4.desc":"Designed and implemented campaign levels for <i>Blaze of Empires</i> (mobile), tuning pace and difficulty from playtest data.",
+    "tl5.title":"Game Programmer", "tl5.when":"Jan 2023 — Feb 2024", "tl5.org":"Streamline Studios, full-time", "tl5.desc":"Playable prototypes and interactive systems in Unity; VR experiences in Unreal Engine 5 (Blueprints + C++). Technical documentation (GDDs/TDDs).",
+    "tl6.title":"Video Game Team Lead", "tl6.when":"Feb — Dec 2022", "tl6.desc":"Led multidisciplinary teams (UI/UX, 2D/3D art, animation) across metaverse, blockchain, and real-time interactive projects.",
     "tl7.title":"Game Developer", "tl7.desc":"3D educational RPG, mobile minigames for children, the arcade racer <i>Eco Troopers Natural Racing</i>, and VR experiences for HTC Vive — the foundation of 6 years designing and programming in Unity.",
-    "skills.eyebrow":"Stack", "skills.h2":"Tools & Skills",
+    "skills.h2":"Tools & Skills",
     "col1.h":"Design", "col1.li1":"Game & Systems Design", "col1.li2":"Economy & Progression Design", "col1.li3":"Level Design", "col1.li4":"Game Balancing", "col1.li5":"Playtesting & Design Review", "col1.li6":"GDD / TDD",
     "col2.h":"Development", "col2.li1":"Unity (URP, Addressables, ScriptableObjects, Animator, Timeline)", "col2.li2":"Unreal Engine 5 (Blueprints, C++)", "col2.li3":"C#, C++, TypeScript", "col2.li4":"Mobile iOS/Android, WebGL, VR/XR (HTC Vive)", "col2.li5":"SOLID, Modular Architecture",
     "col3.h":"Production & AI", "col3.li1":"Claude Code, MCP workflows", "col3.li2":"Prompt engineering, LLM tooling", "col3.li3":"Git/GitHub, Jira, Trello, Figma", "col3.li4":"Scrum / Agile, team leadership", "col3.li5":"Living technical documentation",
-    "kw.eyebrow":"Core Competencies", "kw.h2":"Keyword index (ATS-matched)",
-    "kw.p":"Kept in English to match the standard job-posting phrasing used by ATS platforms (Greenhouse, Workday, Lever) and recruiter keyword search — this list mirrors the exact wording used on both CVs below.",
-    "cv.eyebrow":"Resume", "cv.h2":"Downloadable CV", "cv.note":"Plain-text, single-column PDFs — built to parse cleanly in ATS systems, no graphics or tables.",
-    "cv.rec":"Not sure which one to send? Start with the general profile — it covers both design and development.",
-    "cv1.t":"CV — Game Designer / Developer", "cv1.s":"PDF · general profile", "cv2.t":"CV — Unity Developer", "cv2.s":"PDF · technical focus",
-    "footer.eyebrow":"Contact", "footer.h2":"Let's build something playable.", "footer.cta":"Send an email",
+    "footer.h2":"Let's build something playable.", "footer.cta":"Send an email",
     "footer.copy":"EmberBlast — Jose David Yepes Arango. Portfolio updated 2026."
   },
   es: {
     "nav.games":"Juegos", "nav.about":"Sobre mí", "nav.exp":"Experiencia", "nav.skills":"Habilidades", "nav.contact":"Contacto",
-    "hero.loc":"MEDELLÍN, COLOMBIA", "hero.remote":"REMOTO / ABIERTO A RELOCATION", "hero.status":"DISPONIBLE",
-    "hero.h1b":"— Game Designer y Unity Developer.",
-    "hero.sub":"6+ años diseñando y programando juegos. Fundador de EmberBlast: 8 prototipos publicados en géneros distintos, unidos por una idea — convertir una regla de sistema en parte de la ficción.",
-    "hero.cta1":"Jugar en itch.io ↗",
-    "stat.years":"Años de experiencia", "stat.games":"Juegos publicados", "stat.studios":"Premios y jams destacadas", "stat.followers":"Seguidores (devlogs)",
-    "about.eyebrow":"Sobre mí", "about.h2":"Diseño y programación bajo el mismo techo.",
+    "hero.loc":"Medellín, Colombia", "hero.remote":"Remoto o abierto a relocation", "hero.status":"Disponible para trabajar",
+    "hero.h1b":"Game Designer y Unity Developer",
+    "hero.sub":"6+ años diseñando y programando juegos. Fundador de <b>EmberBlast</b>: 8 prototipos publicados en géneros distintos, unidos por una idea — convertir una regla de sistema en parte de la ficción.",
+    "hero.cta1":"Jugar mis juegos en itch.io",
+    "hero.hint":"Pasa el cursor por las brasas", "hero.hintTouch":"Pasa el dedo por las brasas",
+    "stat.years":"Años de experiencia", "stat.games":"Juegos publicados", "stat.studios":"Premios y jams destacadas", "stat.followers":"Seguidores de mis devlogs",
+    "about.h2":"Diseño y programación bajo el mismo techo.",
     "about.p":"Soy Ingeniero en Diseño de Entretenimiento Digital (UPB, Medellín) y me muevo entre el rol de Game Designer y Unity Developer — diseño sistemas y los implemento yo mismo, lo que acorta el camino entre \"¿y si...?\" y un prototipo jugable. He liderado equipos multidisciplinarios, evaluado un catálogo de 7 estudios como diseñador freelance, y construido herramientas internas asistidas por IA (Claude + MCP) para acelerar documentación y revisión de diseño.",
     "about.callout":"La firma de diseño que se repite en mis prototipos: tomar una abstracción típica de videojuego y volverla diegética — que la ficción explique la regla, no al revés. Mi ejemplo favorito está abajo.",
     "pillar1.h":"Sistemas antes que features", "pillar1.p":"Prefiero pocas reglas que interactúan a muchas features aisladas. Un buen sistema genera más de una consecuencia.",
     "pillar2.h":"Prototipo rápido, decisión rápida", "pillar2.p":"Jams, retos de una semana, builds jugables en días. La pregunta de diseño se responde jugando, no debatiendo.",
     "pillar3.h":"IA como infraestructura, no autocompletado", "pillar3.p":"Construyo flujos con Claude Code y MCP para documentación, revisión y memoria de diseño — no solo para generar texto.",
-    "feat.eyebrow":"Caso de diseño", "feat.h2":"El Ritual — cuando el cooldown se vuelve mortal",
+    "feat.h2":"El Ritual — cuando el cooldown se vuelve mortal",
     "feat.h3":"La magia está maldita: un hechizo solo puede lanzarse una vez cada treinta años.",
     "feat.p":"El jugador protege a los maestros de tres escuelas mágicas — Fuego, Hielo y Oscuridad — mientras completan un ritual prohibido. Los cristales de tiempo aceleran el reuso de hechizos, pero al precio de envejecer al mago en tiempo real: un segundo de cristal equivale a un año de vida. Abusar del recurso literalmente mata de vejez.",
     "feat.swap":"la magia tarda treinta años en recargarse, y manipular el tiempo envejece al personaje",
-    "feat.tag1":"Riesgo / Recompensa", "feat.tag2":"Recurso Diegético", "feat.tag3":"Tema = Mecánica", "feat.cta":"Jugar El Ritual ↗",
+    "feat.tag1":"Riesgo / Recompensa", "feat.tag2":"Recurso Diegético", "feat.tag3":"Tema = Mecánica", "feat.cta":"Jugar El Ritual",
     "pattern.eyebrow":"Misma firma, segundo juego", "pattern.h3":"Path Wizard — no mueves al aldeano, mueves el mundo",
     "pattern.p":"El mismo instinto de El Ritual, aplicado a un género completamente distinto. En lugar de darle al jugador control directo sobre un personaje, Path Wizard le entrega el terreno mismo — rotar casillas, abrir caminos, teletransportar obstáculos — y deja que el aldeano encuentre su propio camino. El puzzle no es el movimiento, es reconfigurar el espacio donde ocurre el movimiento.",
     "pattern.swap":"el aldeano se mueve solo; el jugador solo reconfigura el terreno a su alrededor",
     "pattern.tag1":"Control Indirecto", "pattern.tag2":"Puzzle Ambiental",
-    "mods.eyebrow":"Add-ons de Minecraft", "mods.h2":"Piglin Bodyguard — un compañero que puede perderse a sí mismo por abandono",
+    "mods.h2":"Piglin Bodyguard — un compañero que puede perderse a sí mismo por abandono", "mods.packs":"Behavior + resource pack",
     "mods.p":"Un addon de compañero para Minecraft Bedrock: crafteas un libro de invocación y un piglin aliado te acompaña por cuevas, océanos y portales del Nether. Pelea cuerpo a cuerpo, con arco o ballesta, bloquea con escudo, y se vuelve más fuerte matando enemigos — hasta convertirse en Piglin Brute en el nivel 10. Construido con asistencia de IA (Claude Code), cada sistema y regla bajo control humano total — ya disponible para descargar en CurseForge.",
     "mods.swap":"si lo descuidas demasiado tiempo fuera del Nether, se convierte en zombie",
-    "mods.tag1":"IA de Compañero", "mods.tag2":"Consecuencia Diegética", "mods.tag3":"Desarrollo Asistido por IA", "mods.cta":"Consíguelo en CurseForge ↗",
-    "games.eyebrow":"Portafolio de juegos", "games.h2":"8 prototipos publicados — más Math Mobs Arena.",
+    "mods.tag1":"IA de Compañero", "mods.tag2":"Consecuencia Diegética", "mods.tag3":"Desarrollo Asistido por IA", "mods.cta":"Descargarlo en CurseForge",
+    "games.h2":"8 prototipos publicados — más Math Mobs Arena.",
     "games.sub":"Math Mobs Arena está en pruebas cerradas en Google Play. El resto son gratis en el navegador.",
-    "common.play":"Jugar ↗",
-    "g1.role":"Rol: diseño y desarrollo en Unity (solo)", "g1.badge":"🏆 Ganador — Festival Gamer de las Flores (TV nacional)", "g1.desc":"Traza rutas para robots domésticos autónomos; evita colisiones y llega al destino con el menor daño posible.", "g1.tag":"Puzzle · Control indirecto",
-    "g2.role":"Rol: diseño y desarrollo en Unity (solo) — game jam", "g2.badge":"📺 Revisado en vivo por Alva Majo — aprobado", "g2.desc":"Acción 2D donde el tiempo es el recurso: acelerar hechizos envejece al mago hasta la muerte.", "g2.tag":"Acción · Pixel Art",
-    "g3.role":"Rol: diseño y desarrollo en Unity (solo) — game jam", "g3.badge":"⭐ Destacado en la portada de la Kenney Jam 2021", "g3.desc":"Un mago cozy que reordena el terreno, teletransporta y guía viajeros a su destino sin quedarse sin maná.", "g3.tag":"Puzzle · Cozy",
-    "g4.role":"Rol: diseño y desarrollo en Unity (solo) — game jam", "g4.badge":"🏆 1er lugar — Great Summer Game Jam 2021", "g4.desc":"Sobrevive 3 minutos sin mojarte. Una regla, inmediatamente jugable — sin metajuego de por medio.", "g4.tag":"Shooter arcade",
-    "now.eyebrow":"Más allá de los prototipos", "now.h2":"Dabloons: Guild of Travellers", "now.status":"EN PAUSA — PÁGINA DE STEAM Y WISHLIST EN CONSTRUCCIÓN",
-    "now.meta":"ROGUELITE CO-OP · STEAM · UNITY / C#", "now.title":"Un gato, un gremio, y una tendencia de TikTok que pedía exactamente este juego.",
+    "common.play":"Jugar",
+    "g1.role":"Rol: diseño y desarrollo en Unity (solo)", "g1.badge":"Ganador, Festival Gamer de las Flores (TV nacional)", "g1.desc":"Traza rutas para robots domésticos autónomos; evita colisiones y llega al destino con el menor daño posible.", "g1.tag":"Puzzle, control indirecto",
+    "g2.role":"Rol: diseño y desarrollo en Unity (solo) — game jam", "g2.badge":"Revisado en vivo por Alva Majo — aprobado", "g2.desc":"Acción 2D donde el tiempo es el recurso: acelerar hechizos envejece al mago hasta la muerte.", "g2.tag":"Acción, pixel art",
+    "g3.role":"Rol: diseño y desarrollo en Unity (solo) — game jam", "g3.badge":"Destacado en la portada de la Kenney Jam 2021", "g3.desc":"Un mago cozy que reordena el terreno, teletransporta y guía viajeros a su destino sin quedarse sin maná.", "g3.tag":"Puzzle, cozy",
+    "g4.role":"Rol: diseño y desarrollo en Unity (solo) — game jam", "g4.badge":"1er lugar, Great Summer Game Jam 2021", "g4.desc":"Sobrevive 3 minutos sin mojarte. Una regla, inmediatamente jugable — sin metajuego de por medio.", "g4.tag":"Shooter arcade",
+    "now.h2":"Dabloons: Guild of Travellers", "now.status":"En pausa — página de Steam y wishlist en construcción",
+    "now.meta":"Roguelite co-op para Steam, hecho en Unity / C#", "now.title":"Un gato, un gremio, y una tendencia de TikTok que pedía exactamente este juego.",
     "now.p":"Guild of Travellers nació de la tendencia \"Dabloon Cat\" en TikTok: eres un gato recolectando Dabloons para mejorar la base de tu gremio — un roguelite co-op pensado para el juego que esa audiencia estaba pidiendo a gritos. La página de Steam ya está pagada y la landing de wishlist está en construcción; el desarrollo está en pausa por ahora, pero los devlogs de abajo son reales, y el build está programado 100% a mano en Unity/C# — hecho antes de que los flujos asistidos por IA fueran parte de mi forma de trabajar.",
-    "now.tag1":"De viral a jugable", "now.tag2":"Roguelite co-op", "now.tag3":"Programado a mano en Unity/C#", "now.cta":"Ver los devlogs en TikTok ↗",
-    "case.meta":"BLAZE OF EMPIRES · ESTRATEGIA MOBILE · UNITY", "case.h3":"Diseño de niveles de campaña, de punta a punta",
+    "now.tag1":"De viral a jugable", "now.tag2":"Roguelite co-op", "now.tag3":"Programado a mano en Unity/C#", "now.cta":"Ver los devlogs en TikTok",
+    "case.meta":"Blaze of Empires, estrategia mobile en Unity", "case.h3":"Diseño de niveles de campaña, de punta a punta",
     "case.p":"Diseñé e implementé niveles de campaña usando Unity y las herramientas internas de edición del estudio — construyendo escenarios de juego ajustados a ritmo y progresión de dificultad a lo largo del arco de campaña, iterando niveles a partir de datos de playtest.",
-    "g5.role":"Rol: diseño y desarrollo en Unity (solo) — game jam", "g5.desc":"Las flechas existen en el mundo: se recogen del suelo o se desvían con la espada en pleno combate.", "g5.tag":"Acción · Top-down",
-    "g6.role":"Rol: diseño y desarrollo en Unity (solo)", "g6.desc":"Una plaga vuelve agresivo a todo el que infecta. El jugador es el médico enviado a contenerla.", "g6.tag":"Acción · Pixel Art",
-    "g7.role":"Rol: diseño y desarrollo en Unity (solo) — reto de 1 semana", "g7.desc":"Voxel 3D hecho en una semana (1 Game 1 Week): Katla escapa de piratas junto a su hermano.", "g7.tag":"Acción · Voxel",
-    "g8.role":"Rol: diseño de juego y desarrollo en Unity (equipo de 3 — 2 amigos en gráficos y animación)", "g8.desc":"Tower defense 2D: espíritus guardianes defienden el bosque de Rektwood de una invasión mecánica.", "g8.tag":"Estrategia · TD",
-    "g9.role":"Rol: diseño y desarrollo en Unity (solo) — asistido por IA, bajo control humano", "g9.badge":"🧪 En pruebas cerradas · Google Play",
+    "g5.role":"Rol: diseño y desarrollo en Unity (solo) — game jam", "g5.desc":"Las flechas existen en el mundo: se recogen del suelo o se desvían con la espada en pleno combate.", "g5.tag":"Acción, top-down",
+    "g6.role":"Rol: diseño y desarrollo en Unity (solo)", "g6.desc":"Una plaga vuelve agresivo a todo el que infecta. El jugador es el médico enviado a contenerla.", "g6.tag":"Acción, pixel art",
+    "g7.role":"Rol: diseño y desarrollo en Unity (solo) — reto de 1 semana", "g7.desc":"Voxel 3D hecho en una semana (1 Game 1 Week): Katla escapa de piratas junto a su hermano.", "g7.tag":"Acción, voxel",
+    "g8.role":"Rol: diseño de juego y desarrollo en Unity (equipo de 3 — 2 amigos en gráficos y animación)", "g8.desc":"Tower defense 2D: espíritus guardianes defienden el bosque de Rektwood de una invasión mecánica.", "g8.tag":"Estrategia, tower defense",
+    "g9.role":"Rol: diseño y desarrollo en Unity (solo) — asistido por IA, bajo control humano", "g9.badge":"En pruebas cerradas en Google Play",
     "g9.desc":"Un battler de matemáticas para niños: resuelves operaciones en pleno combate para vencer a los mobs. Assets gratuitos de Kenney y algo de UI generada con IA — construido con Claude Code en Unity bajo dirección humana total, ya probado con niños reales.",
-    "g9.tag":"Educativo · Gamificación",
-    "exp.eyebrow":"Experiencia", "exp.h2":"De estudios pequeños a liderazgo técnico.",
-    "tl1.title":"Fundador y Desarrollador Indie", "tl1.org":"EmberBlast · Independiente", "tl1.desc":"Producción end-to-end de 8 juegos para PC y mobile: diseño, programación, UI, build y publicación. Comunidad de 20.000+ seguidores vía devlogs.",
-    "tl2.title":"Video Game Designer", "tl2.org":"indie.io (Freedom Games) · Freelance, remoto", "tl2.desc":"Revisión de diseño sobre un catálogo interno de 7 títulos (estrategia, roguelite, cozy sim, sci-fi, colony-management). Diseñé y desplegué un asistente de IA (Claude + MCP) integrado a Slack para acelerar la documentación de diseño.",
-    "tl3.title":"Interactive Software Developer — Unity", "tl3.org":"Alternova Inc. · Tiempo completo", "tl3.desc":"Desarrollo y mantenimiento de apps móviles e interactivas en Unity/C#. Refactor de código legacy, arquitectura modular con SOLID, flujos de IA/MCP integrados al pipeline del equipo.",
-    "tl4.title":"Level Designer", "tl4.org":"KikiriCompany · Freelance, remoto", "tl4.desc":"Diseño e implementación de niveles de campaña para <i>Blaze of Empires</i> (mobile), ajustando ritmo y dificultad con datos de playtest.",
-    "tl5.title":"Game Programmer", "tl5.org":"Streamline Studios · Tiempo completo", "tl5.desc":"Prototipos jugables y sistemas interactivos en Unity; experiencias VR en Unreal Engine 5 (Blueprints + C++). Documentación técnica (GDDs/TDDs).",
-    "tl6.title":"Video Game Team Lead", "tl6.desc":"Liderazgo de equipos multidisciplinarios (UI/UX, arte 2D/3D, animación) en proyectos de metaverso, blockchain e interactivos en tiempo real.",
+    "g9.tag":"Educativo, gamificación",
+    "exp.h2":"De estudios pequeños a liderazgo técnico.",
+    "tl1.title":"Fundador y Desarrollador Indie", "tl1.when":"2018 — Hoy", "tl1.org":"EmberBlast, independiente", "tl1.desc":"Producción end-to-end de 8 juegos para PC y mobile: diseño, programación, UI, build y publicación. Comunidad de 20.000+ seguidores vía devlogs.",
+    "tl2.title":"Video Game Designer", "tl2.when":"Jun — Ago 2026", "tl2.org":"indie.io (Freedom Games), freelance, remoto", "tl2.desc":"Revisión de diseño sobre un catálogo interno de 7 títulos (estrategia, roguelite, cozy sim, sci-fi, colony-management). Diseñé y desplegué un asistente de IA (Claude + MCP) integrado a Slack para acelerar la documentación de diseño.",
+    "tl3.title":"Interactive Software Developer — Unity", "tl3.when":"Ene 2025 — May 2026", "tl3.org":"Alternova Inc., tiempo completo", "tl3.desc":"Desarrollo y mantenimiento de apps móviles e interactivas en Unity/C#. Refactor de código legacy, arquitectura modular con SOLID, flujos de IA/MCP integrados al pipeline del equipo.",
+    "tl4.title":"Level Designer", "tl4.when":"Jul — Ago 2024", "tl4.org":"KikiriCompany, freelance, remoto", "tl4.desc":"Diseño e implementación de niveles de campaña para <i>Blaze of Empires</i> (mobile), ajustando ritmo y dificultad con datos de playtest.",
+    "tl5.title":"Game Programmer", "tl5.when":"Ene 2023 — Feb 2024", "tl5.org":"Streamline Studios, tiempo completo", "tl5.desc":"Prototipos jugables y sistemas interactivos en Unity; experiencias VR en Unreal Engine 5 (Blueprints + C++). Documentación técnica (GDDs/TDDs).",
+    "tl6.title":"Video Game Team Lead", "tl6.when":"Feb — Dic 2022", "tl6.desc":"Liderazgo de equipos multidisciplinarios (UI/UX, arte 2D/3D, animación) en proyectos de metaverso, blockchain e interactivos en tiempo real.",
     "tl7.title":"Game Developer", "tl7.desc":"RPG educativo 3D, minijuegos móviles para público infantil, el racer arcade <i>Eco Troopers Natural Racing</i>, y experiencias VR para HTC Vive — la base de 6 años programando y diseñando en Unity.",
-    "skills.eyebrow":"Stack", "skills.h2":"Herramientas y habilidades",
+    "skills.h2":"Herramientas y habilidades",
     "col1.h":"Diseño", "col1.li1":"Game &amp; Systems Design", "col1.li2":"Economía y progresión", "col1.li3":"Level Design", "col1.li4":"Game balancing", "col1.li5":"Playtesting y revisión de diseño", "col1.li6":"GDD / TDD",
     "col2.h":"Desarrollo", "col2.li1":"Unity (URP, Addressables, ScriptableObjects, Animator, Timeline)", "col2.li2":"Unreal Engine 5 (Blueprints, C++)", "col2.li3":"C#, C++, TypeScript", "col2.li4":"Mobile iOS/Android, WebGL, VR/XR (HTC Vive)", "col2.li5":"SOLID, arquitectura modular",
     "col3.h":"Producción e IA", "col3.li1":"Claude Code, MCP workflows", "col3.li2":"Prompt engineering, tooling con LLMs", "col3.li3":"Git/GitHub, Jira, Trello, Figma", "col3.li4":"Scrum / Agile, liderazgo de equipo", "col3.li5":"Documentación técnica viva",
-    "kw.eyebrow":"Competencias clave", "kw.h2":"Índice de palabras clave (coincide con ATS)",
-    "kw.p":"Se mantienen en inglés para coincidir con el lenguaje estándar de ofertas de empleo usado por los ATS (Greenhouse, Workday, Lever) y la búsqueda de reclutadores — esta lista refleja el mismo texto usado en ambos CVs de abajo.",
-    "cv.eyebrow":"Hoja de vida", "cv.h2":"CV descargable", "cv.note":"PDFs de una sola columna, en texto plano — diseñados para que los ATS los lean sin problema, sin gráficos ni tablas.",
-    "cv.rec":"¿No sabes cuál enviar? Empieza con el perfil general — cubre tanto diseño como desarrollo.",
-    "cv1.t":"CV — Game Designer / Developer", "cv1.s":"PDF · perfil general", "cv2.t":"CV — Unity Developer", "cv2.s":"PDF · enfoque técnico",
-    "footer.eyebrow":"Contacto", "footer.h2":"¿Construimos algo jugable?", "footer.cta":"Escribir un correo",
+    "footer.h2":"¿Construimos algo jugable?", "footer.cta":"Escribir un correo",
     "footer.copy":"EmberBlast — Jose David Yepes Arango. Portafolio actualizado 2026."
   }
 };
+
 function applyLang(lang){
   if(!I18N[lang]) lang = 'en';
   document.documentElement.setAttribute('lang', lang);
-  var dict = I18N[lang];
+  var dict = I18N[lang], en = I18N.en;
   var nodes = document.querySelectorAll('[data-i18n]');
   for(var i=0;i<nodes.length;i++){
     var key = nodes[i].getAttribute('data-i18n');
-    if(dict[key] != null) nodes[i].innerHTML = dict[key];
+    var v = dict[key] != null ? dict[key] : en[key];
+    if(v != null) nodes[i].innerHTML = v;
   }
-  var btns = document.querySelectorAll('.lang-btn');
+  var btns = document.querySelectorAll('.lang button');
   for(var j=0;j<btns.length;j++){
     btns[j].setAttribute('aria-pressed', btns[j].getAttribute('data-lang') === lang ? 'true' : 'false');
   }
@@ -869,93 +882,267 @@ function applyLang(lang){
   try{
     var saved = localStorage.getItem('eb_lang');
     if(saved === 'es' || saved === 'en') lang = saved;
+    else if((navigator.language || '').toLowerCase().indexOf('es') === 0) lang = 'es';
   }catch(e){}
   applyLang(lang);
+  document.querySelectorAll('.lang button').forEach(function(b){
+    b.addEventListener('click', function(){ applyLang(b.getAttribute('data-lang')); });
+  });
 })();
 
+/* ================= The forge =================
+   The name is sampled from the real <h1> layout into a grid of square embers.
+   Embers rise from below and lock into the letters, then smoulder. The pointer
+   blows on them: they flare toward white and scatter, then spring home.
+   Scrolling away cools the whole forge. Paused off-screen and in background
+   tabs; skipped entirely for reduced motion. */
 (function(){
-  var canvas = document.getElementById('ember-fx');
-  if(!canvas || !canvas.getContext) return;
-  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var root = document.documentElement;
+  if(!root.classList.contains('forge-on')) return;
+  var hero = document.querySelector('.hero');
+  var cvs = document.getElementById('forge');
+  var h1 = document.querySelector('.forge-name');
+  var hint = document.querySelector('.hint');
+  var ctx = cvs && cvs.getContext('2d');
+  if(!hero || !ctx){ root.classList.remove('forge-on'); return; }
 
-  var ctx = canvas.getContext('2d', {alpha:true});
+  var coarse = window.matchMedia && matchMedia('(pointer: coarse)').matches;
   var dpr = Math.min(window.devicePixelRatio || 1, 2);
-  var w = 0, h = 0, particles = [], running = true, last = 0, rgb = [255,106,51];
+  var W = 0, H = 0, N = 0, cell = 4, sq = 3;
+  var X, Y, VX, VY, HX, HY, HEAT, SX, SY, DEL, SEED, PH;
+  var t0 = 0, last = 0, raf = 0, visible = true, built = false, interacted = false;
+  var mx = -9999, my = -9999, mActive = 0, lastMove = 0;
 
-  function hexToRgb(hex){
-    hex = (hex||'').trim().replace('#','');
-    if(hex.length === 3) hex = hex.split('').map(function(c){ return c+c; }).join('');
-    var n = parseInt(hex, 16);
-    if(isNaN(n)) return [255,106,51];
-    return [(n>>16)&255, (n>>8)&255, n&255];
+  /* heat ramp: char → deep red → ember → flame → white-hot */
+  var STOPS = [[0,[46,20,13]],[.25,[124,36,16]],[.5,[226,74,26]],[.72,[255,150,62]],[.9,[255,214,150]],[1,[255,246,224]]];
+  var NB = 32, COLORS = [];
+  for(var b=0;b<NB;b++){
+    var h = b/(NB-1), k = 0;
+    while(k < STOPS.length-2 && h > STOPS[k+1][0]) k++;
+    var a = STOPS[k], c = STOPS[k+1], f = (h - a[0])/(c[0]-a[0]);
+    COLORS.push('rgb('+Math.round(a[1][0]+(c[1][0]-a[1][0])*f)+','+Math.round(a[1][1]+(c[1][1]-a[1][1])*f)+','+Math.round(a[1][2]+(c[1][2]-a[1][2])*f)+')');
   }
-  function updateColor(){
-    try{
-      var c = getComputedStyle(document.documentElement).getPropertyValue('--ember');
-      rgb = hexToRgb(c);
-    }catch(e){}
+  var buckets = []; for(var q=0;q<NB;q++) buckets.push([]);
+
+  /* free sparks that break off and rise */
+  var SPMAX = coarse ? 70 : 150, spN = 0;
+  var spX = new Float32Array(SPMAX), spY = new Float32Array(SPMAX), spVX = new Float32Array(SPMAX), spVY = new Float32Array(SPMAX), spL = new Float32Array(SPMAX), spM = new Float32Array(SPMAX);
+  function spark(x, y, power){
+    if(spN >= SPMAX) return;
+    var i = spN++;
+    spX[i] = x; spY[i] = y;
+    spVX[i] = (Math.random()-.5) * (30 + 120*power);
+    spVY[i] = -(40 + Math.random()*90 + 160*power);
+    spM[i] = spL[i] = .7 + Math.random()*1.1;
   }
-  function countFor(width){
-    return width < 640 ? 20 : (width < 1100 ? 32 : 44);
-  }
-  function makeParticle(spawnBottom){
-    return {
-      x: Math.random()*w,
-      y: spawnBottom ? h + Math.random()*30 : Math.random()*h,
-      r: 1 + Math.random()*2,
-      speed: 12 + Math.random()*20,
-      phase: Math.random()*Math.PI*2,
-      alpha: 0.3 + Math.random()*0.45
-    };
-  }
-  function resize(){
-    w = window.innerWidth; h = window.innerHeight;
-    canvas.width = Math.round(w*dpr); canvas.height = Math.round(h*dpr);
+
+  function sample(){
+    var hr = hero.getBoundingClientRect();
+    W = Math.round(hr.width); H = Math.round(hr.height);
+    if(W < 50 || H < 50) return false;
+    cvs.width = Math.round(W*dpr); cvs.height = Math.round(H*dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
-  }
-  function initParticles(){
-    var n = countFor(w);
-    particles = [];
-    for(var i=0;i<n;i++) particles.push(makeParticle(false));
-  }
-  function frame(now){
-    if(!running) return;
-    var dt = Math.min((now-last)/1000, 0.05);
-    last = now;
-    ctx.clearRect(0,0,w,h);
-    for(var i=0;i<particles.length;i++){
-      var p = particles[i];
-      p.y -= p.speed*dt;
-      p.x += Math.sin(now/1000 + p.phase)*0.25;
-      if(p.y < -20){ particles[i] = makeParticle(true); continue; }
-      var bottomFade = Math.max(0, Math.min(1, (h - p.y)/60));
-      var topFade = Math.max(0, Math.min(1, p.y/(h*0.25 + 1)));
-      var flicker = 0.75 + 0.25*Math.sin(now/400 + p.phase);
-      var a = p.alpha * bottomFade * topFade * flicker;
-      if(a <= 0.01) continue;
-      ctx.beginPath();
-      ctx.fillStyle = 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+a.toFixed(3)+')';
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-      ctx.fill();
+
+    var lines = h1.querySelectorAll('.ln');
+    var cs = getComputedStyle(lines[0]);
+    var fs = parseFloat(cs.fontSize);
+    var off = document.createElement('canvas'); off.width = W; off.height = H;
+    var o = off.getContext('2d', {willReadFrequently:true});
+    o.font = cs.fontWeight + ' ' + fs + 'px ' + cs.fontFamily;
+    o.fillStyle = '#fff'; o.textBaseline = 'alphabetic';
+    var m = o.measureText('JOSEYEPES');
+    var fA = m.fontBoundingBoxAscent || fs*.8, fD = m.fontBoundingBoxDescent || fs*.2;
+    for(var i=0;i<lines.length;i++){
+      var r = lines[i].getBoundingClientRect();
+      var base = (r.top - hr.top) + (r.height - (fA+fD))/2 + fA;
+      o.fillText(lines[i].textContent.toUpperCase(), r.left - hr.left, base);
     }
-    requestAnimationFrame(frame);
+    var data = o.getImageData(0,0,W,H).data;
+
+    /* choose the ember grid so the count fits the device */
+    var area = 0;
+    for(var y=0;y<H;y+=2) for(var x=0;x<W;x+=2) if(data[(y*W+x)*4+3] > 128) area += 4;
+    var target = coarse ? 1700 : 4200;
+    cell = Math.max(3, Math.min(11, Math.sqrt(area/target)));
+    sq = Math.max(2, cell*.8);
+
+    var pts = [];
+    for(var gy=cell/2; gy<H; gy+=cell){
+      for(var gx=cell/2; gx<W; gx+=cell){
+        var ix = gx|0, iy = gy|0;
+        if(data[(iy*W+ix)*4+3] > 128) pts.push(gx, gy);
+      }
+    }
+    var n = pts.length/2;
+    if(n < 50) return false;
+    var keep = built && N === n; /* same layout: keep positions so a resize doesn't replay the intro */
+    if(!keep){
+      N = n;
+      X = new Float32Array(N); Y = new Float32Array(N); VX = new Float32Array(N); VY = new Float32Array(N);
+      HX = new Float32Array(N); HY = new Float32Array(N); HEAT = new Float32Array(N);
+      SX = new Float32Array(N); SY = new Float32Array(N); DEL = new Float32Array(N); SEED = new Float32Array(N); PH = new Uint8Array(N);
+    }
+    for(var j=0;j<N;j++){
+      HX[j] = pts[j*2]; HY[j] = pts[j*2+1];
+      if(!keep){
+        SEED[j] = Math.random()*6.283;
+        SX[j] = HX[j] + (Math.random()-.5)*W*.35;
+        SY[j] = H + 10 + Math.random()*H*.35;
+        X[j] = SX[j]; Y[j] = SY[j];
+        DEL[j] = .15 + (HX[j]/W)*.55 + Math.random()*.55;
+        HEAT[j] = 1; PH[j] = 0;
+      }else if(PH[j] === 1){
+        X[j] = HX[j]; Y[j] = HY[j];
+      }
+    }
+    if(!keep) t0 = performance.now()/1000;
+    built = true;
+    return true;
   }
-  function start(){ if(running) return; running = true; last = performance.now(); requestAnimationFrame(frame); }
-  function stop(){ running = false; }
-  var resizeTimer;
-  window.addEventListener('resize', function(){
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function(){ resize(); initParticles(); }, 150);
-  });
-  document.addEventListener('visibilitychange', function(){
-    if(document.hidden) stop(); else start();
-  });
-  if(window.matchMedia){
-    try{ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateColor); }catch(e){}
+
+  function easeOutExpo(p){ return p >= 1 ? 1 : 1 - Math.pow(2, -10*p); }
+
+  function frame(){
+    raf = 0;
+    if(!visible || document.hidden) return;
+    var now = performance.now()/1000;
+    var dt = Math.min(.033, now - (last || now)); last = now;
+    var t = now - t0;
+
+    var hr = hero.getBoundingClientRect();
+    var cool = Math.max(0, Math.min(1, -hr.top / (H*.85)));
+    var heatScale = 1 - .82*cool;
+    var idle = (now - lastMove) > 2.2;
+    mActive = Math.max(0, mActive - dt*(idle ? 3 : .5));
+
+    var R = coarse ? 74 : 110, R2 = R*R;
+    var px = mx, py = my, pOn = mActive > .02;
+
+    for(var b=0;b<NB;b++) buckets[b].length = 0;
+
+    for(var i=0;i<N;i++){
+      var lt = t - DEL[i];
+      if(lt < 0) continue;
+      var heat = HEAT[i];
+      if(PH[i] === 0){
+        /* intro: a spark flying up into place, white-hot, cooling as it lands */
+        var p = lt / .95;
+        if(p >= 1){ PH[i] = 1; X[i] = HX[i]; Y[i] = HY[i]; VX[i] = 0; VY[i] = 0; }
+        else{
+          var e = easeOutExpo(p);
+          X[i] = SX[i] + (HX[i]-SX[i])*e + Math.sin(lt*9 + SEED[i])*(1-e)*10;
+          Y[i] = SY[i] + (HY[i]-SY[i])*e;
+          heat = 1 - p*.25;
+        }
+      }
+      if(PH[i] === 1){
+        /* smoulder: a slow travelling glow across the letters */
+        var target = .5 + .13*Math.sin(HX[i]*.019 + t*.85)*Math.sin(HY[i]*.023 - t*.6) + .07*Math.sin(t*2.6 + SEED[i]);
+        var ax = (HX[i]-X[i])*46 - VX[i]*8.5;
+        var ay = (HY[i]-Y[i])*46 - VY[i]*8.5;
+        if(pOn){
+          var dx = X[i]-px, dy = Y[i]-py, d2 = dx*dx + dy*dy;
+          if(d2 < R2){
+            var d = Math.sqrt(d2) + .001, f = 1 - d/R;
+            var push = f*f*3400*mActive;
+            ax += dx/d*push; ay += dy/d*push - f*500*mActive;
+            target = Math.max(target, .62 + .38*f);
+            if(f > .55 && Math.random() < .012*mActive) spark(X[i], Y[i], f);
+          }
+        }
+        VX[i] += ax*dt; VY[i] += ay*dt;
+        X[i] += VX[i]*dt; Y[i] += VY[i]*dt;
+        heat += (target - heat) * Math.min(1, dt*(target > heat ? 9 : 1.6));
+      }
+      HEAT[i] = heat;
+      var hb = (heat*heatScale*(NB-1))|0;
+      buckets[hb < 0 ? 0 : hb > NB-1 ? NB-1 : hb].push(i);
+    }
+
+    /* ambient sparks lifting off the letters */
+    if(t > 1.4 && N && Math.random() < (coarse ? .2 : .35)*heatScale){
+      var s = (Math.random()*N)|0; if(PH[s] === 1) spark(X[s], Y[s], .05);
+    }
+
+    ctx.clearRect(0,0,W,H);
+    ctx.globalCompositeOperation = 'lighter';
+    var half = sq/2, gl = sq*2.4, gh = gl/2;
+    /* glow pass for the hotter embers */
+    ctx.globalAlpha = .11;
+    for(var g=14; g<NB; g++){
+      var bk = buckets[g]; if(!bk.length) continue;
+      ctx.fillStyle = COLORS[g];
+      for(var u=0; u<bk.length; u++){ var k = bk[u]; ctx.fillRect(X[k]-gh, Y[k]-gh, gl, gl); }
+    }
+    ctx.globalAlpha = 1;
+    for(var c=0; c<NB; c++){
+      var bc = buckets[c]; if(!bc.length) continue;
+      ctx.fillStyle = COLORS[c];
+      for(var v=0; v<bc.length; v++){ var kk = bc[v]; ctx.fillRect(X[kk]-half, Y[kk]-half, sq, sq); }
+    }
+    /* free sparks */
+    for(var si=spN-1; si>=0; si--){
+      spL[si] -= dt;
+      if(spL[si] <= 0){
+        spN--; spX[si]=spX[spN]; spY[si]=spY[spN]; spVX[si]=spVX[spN]; spVY[si]=spVY[spN]; spL[si]=spL[spN]; spM[si]=spM[spN];
+        continue;
+      }
+      spVY[si] -= 20*dt; spVX[si] *= .985;
+      spX[si] += spVX[si]*dt + Math.sin(now*6 + si)*.3; spY[si] += spVY[si]*dt;
+      var life = spL[si]/spM[si];
+      var hb2 = (life*heatScale*(NB-1))|0;
+      ctx.fillStyle = COLORS[hb2 < 0 ? 0 : hb2];
+      var ss = Math.max(1.5, sq*.55*life + 1);
+      ctx.fillRect(spX[si]-ss/2, spY[si]-ss/2, ss, ss);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+
+    /* on touch devices, drop to ~30fps once nobody is touching */
+    if(coarse && idle && t > 3){ setTimeout(schedule, 30); }
+    else schedule();
   }
-  document.querySelectorAll('.lang-btn').forEach(function(b){ b.addEventListener('click', function(){ setTimeout(updateColor, 50); }); });
-  resize(); updateColor(); initParticles();
-  running = false; start();
+  function schedule(){ if(!raf && visible && !document.hidden) raf = requestAnimationFrame(frame); }
+
+  function point(x, y){
+    var r = hero.getBoundingClientRect();
+    mx = x - r.left; my = y - r.top;
+    mActive = 1; lastMove = performance.now()/1000;
+    if(!interacted && hint){ interacted = true; setTimeout(function(){ hint.classList.add('done'); }, 1400); }
+  }
+  hero.addEventListener('pointermove', function(e){ if(e.pointerType !== 'touch') point(e.clientX, e.clientY); }, {passive:true});
+  hero.addEventListener('pointerleave', function(){ mActive = Math.min(mActive, .3); }, {passive:true});
+  hero.addEventListener('touchstart', function(e){ var tt = e.touches[0]; if(tt) point(tt.clientX, tt.clientY); }, {passive:true});
+  hero.addEventListener('touchmove', function(e){ var tt = e.touches[0]; if(tt) point(tt.clientX, tt.clientY); }, {passive:true});
+
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(es){
+      visible = es[0].isIntersecting;
+      if(visible){ last = 0; schedule(); }
+    }).observe(hero);
+  }
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden){ last = 0; schedule(); } });
+
+  var lastW = 0, lastH = 0, rz;
+  function relayout(){
+    var r = hero.getBoundingClientRect();
+    if(Math.abs(r.width - lastW) < 2 && Math.abs(r.height - lastH) < 80) return;
+    lastW = r.width; lastH = r.height;
+    if(!sample()){ root.classList.remove('forge-on'); return; }
+    schedule();
+  }
+  window.addEventListener('resize', function(){ clearTimeout(rz); rz = setTimeout(relayout, 180); });
+
+  function start(){
+    try{ relayout(); }catch(e){ root.classList.remove('forge-on'); }
+  }
+  /* wait for the display face so the embers trace the real letterforms */
+  var fontsReady = document.fonts && document.fonts.load
+    ? Promise.race([
+        document.fonts.load('900 100px "Big Shoulders Display"'),
+        new Promise(function(res){ setTimeout(res, 2500); })
+      ])
+    : Promise.resolve();
+  fontsReady.then(function(){ requestAnimationFrame(start); }, function(){ requestAnimationFrame(start); });
 })();
 </script>
 </body>
