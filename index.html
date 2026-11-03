@@ -264,84 +264,27 @@ section{padding-block:clamp(80px, 11vw, 150px); border-top:1px solid var(--rule)
 .games{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:clamp(36px,4vw,56px) clamp(20px,2.4vw,32px)}
 @media (max-width:980px){ .games{grid-template-columns:repeat(2, minmax(0,1fr))} }
 @media (max-width:600px){ .games{grid-template-columns:minmax(0,1fr)} }
-.game{display:flex; flex-direction:column; gap:10px; color:var(--ash)}
-/* ---- forge layer: covers start as cold iron ---- */
-.shot{
-  --heat:0; position:relative; display:block; width:100%; padding:0; border:0; margin:0; cursor:pointer;
-  border-radius:4px; overflow:hidden; background:#000; aspect-ratio:4/3; color:inherit; font:inherit;
-  -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; touch-action:pan-y; -webkit-tap-highlight-color:transparent;
-  transition:transform .16s var(--ease-out);
+.game{display:flex; flex-direction:column; gap:10px; text-decoration:none; color:var(--ash); transition:transform .16s var(--ease-out)}
+.game:active{transform:scale(.985)}
+.game .shot{position:relative; border-radius:4px; overflow:hidden; background:#000; aspect-ratio:4/3}
+.game .shot img{width:100%; height:100%; object-fit:cover; transition:transform .6s var(--ease-out), filter .4s ease}
+.game .shot::after{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+  transition:box-shadow .3s ease;
 }
-.shot.hot{transform:scale(.985)}
-.shot img{
-  width:100%; height:100%; object-fit:cover; pointer-events:none;
-  filter:grayscale(1) sepia(calc(var(--heat) * .9)) saturate(calc(1 + var(--heat) * 3)) hue-rotate(calc(var(--heat) * -12deg)) brightness(calc(.42 + var(--heat) * .55)) contrast(1.15);
-}
-.shot::before{ /* hammered-iron grain, gone once forged */
-  content:""; position:absolute; inset:0; z-index:1; pointer-events:none; opacity:.5; transition:opacity .9s ease;
-  background:repeating-linear-gradient(115deg, rgba(255,255,255,.035) 0 2px, transparent 2px 7px), linear-gradient(180deg, rgba(20,16,14,.15), rgba(10,8,7,.55));
-}
-.shot::after{content:""; position:absolute; inset:0; z-index:3; border-radius:inherit; pointer-events:none; box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
-.shot .glow{
-  position:absolute; inset:0; z-index:2; pointer-events:none; opacity:var(--heat); mix-blend-mode:screen;
-  background:radial-gradient(75% 85% at 50% 100%, var(--h5), var(--h3) 38%, var(--h1) 70%, transparent 90%);
-}
-.shot .fill{position:absolute; left:0; right:0; bottom:0; height:3px; z-index:4; background:var(--h4); transform-origin:left; transform:scaleX(var(--heat)); box-shadow:0 0 10px var(--h3)}
-.forge-hint{
-  position:absolute; left:10px; bottom:12px; z-index:4; display:inline-flex; align-items:center; gap:8px;
-  font-size:.8rem; padding:6px 10px; border-radius:3px; background:rgba(14,10,8,.78); color:var(--ash);
-  transition:opacity .3s ease;
-}
-.shot:focus-visible{outline:2px solid var(--flame); outline-offset:3px}
 @media (hover:hover) and (pointer:fine){
-  .game:not(.forged) .shot:hover .glow{opacity:max(var(--heat), .14)}
-  .game.forged .shot:hover img{transform:scale(1.04)}
+  .game:hover .shot img{transform:scale(1.04); filter:saturate(1.15) brightness(1.05)}
+  .game:hover .shot::after{box-shadow:inset 0 0 0 1px var(--h3), inset 0 -60px 60px -40px color-mix(in srgb, var(--h3) 55%, transparent)}
+  .game:hover .go{color:var(--flame)}
 }
-/* forged: quench to full colour */
-.game.forged .shot{cursor:default}
-.game.forged .shot img{filter:none; transition:filter 1.1s var(--ease-out), transform .6s var(--ease-out)}
-.game.forged .shot::before,.game.forged .forge-hint,.game.forged .fill{opacity:0}
-.game.forged .shot .glow{opacity:0; transition:opacity 1.2s ease}
-.game.forged.just .shot::after{animation:quench 1.2s ease-out}
-@keyframes quench{0%{box-shadow:inset 0 0 0 2px var(--h5), 0 0 0 0 transparent} 100%{box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}}
-.steam{position:absolute; z-index:5; width:6px; height:6px; background:rgba(230,222,214,.5); pointer-events:none}
-.forge-spark{position:fixed; z-index:60; width:4px; height:4px; background:var(--h5); pointer-events:none; box-shadow:0 0 6px var(--h4)}
-.forge-howto{margin-top:10px; font-size:.95rem}
-.linkish{background:none; border:0; padding:0; font:inherit; color:var(--flame); text-decoration:underline; text-underline-offset:.22em; cursor:pointer}
-.linkish[hidden]{display:none}
-/* progress pill */
-.forge-hud{
-  position:fixed; z-index:45; left:max(16px, env(safe-area-inset-left,0px)); bottom:max(16px, env(safe-area-inset-bottom,0px));
-  display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:999px; border:1px solid var(--rule);
-  background:color-mix(in srgb, var(--soot) 92%, transparent); color:var(--ash); font:500 .86rem/1 var(--body);
-  box-shadow:0 12px 30px -12px rgba(0,0,0,.85); cursor:pointer; font-variant-numeric:tabular-nums;
-  opacity:0; transform:translateY(10px); pointer-events:none; transition:opacity .35s var(--ease-out), transform .35s var(--ease-out);
-}
-.forge-hud.show{opacity:1; transform:none; pointer-events:auto}
-.forge-hud:active{transform:scale(.97)}
-.forge-hud .pips{display:flex; gap:3px}
-.forge-hud .pips i{width:6px; height:12px; border-radius:1px; background:var(--soot-3); transition:background-color .3s ease, box-shadow .3s ease}
-.forge-hud .pips i.on{background:var(--h4); box-shadow:0 0 8px color-mix(in srgb, var(--h3) 70%, transparent)}
-.forge-hud.done{border-color:color-mix(in srgb, var(--h3) 60%, transparent); box-shadow:0 0 30px -8px color-mix(in srgb, var(--h3) 60%, transparent)}
-.forge-toast{
-  position:fixed; z-index:46; right:max(16px, env(safe-area-inset-right,0px)); bottom:max(16px, env(safe-area-inset-bottom,0px));
-  width:min(330px, calc(100vw - 32px)); padding:14px 16px; border-radius:6px; background:var(--soot-2);
-  border:1px solid color-mix(in srgb, var(--h3) 55%, transparent); box-shadow:0 0 40px -10px color-mix(in srgb, var(--h3) 55%, transparent);
-  display:flex; gap:12px; align-items:flex-start; transition:opacity .3s var(--ease-out), transform .3s var(--ease-out);
-}
-.forge-toast[hidden]{display:flex!important; opacity:0; transform:translateY(12px); pointer-events:none; visibility:hidden; transition:opacity .2s ease, transform .2s ease, visibility 0s .2s}
-.forge-toast .px{margin-top:.45em}
-.forge-toast small{display:block; color:var(--ash-faint); font-size:.8rem}
-@media (max-width:560px){ .forge-toast{bottom:calc(max(16px, env(safe-area-inset-bottom,0px)) + 58px); right:auto; left:max(16px, env(safe-area-inset-left,0px))} }
-@media (prefers-reduced-motion:reduce){ .shot, .game.forged .shot img{transition:none} .game.forged.just .shot::after{animation:none} }
 .game h3{font-size:1.7rem; margin-top:6px}
 .game .role{font-size:.84rem; color:var(--ash-faint)}
 .award{display:flex; gap:10px; align-items:baseline; font-size:.9rem; color:var(--flame); font-weight:500}
 .award .px{transform:translateY(-1px)}
 .game .desc{font-size:.95rem; color:var(--ash-dim)}
 .game .meta{display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:.84rem; color:var(--ash-faint); margin-top:auto; padding-top:8px; border-top:1px solid var(--rule)}
-.go{display:inline-flex; align-items:center; gap:6px; color:var(--ash); text-decoration:none; transition:color .2s ease}
-@media (hover:hover){ .go:hover{color:var(--flame)} }
+.go{display:inline-flex; align-items:center; gap:6px; color:var(--ash); transition:color .2s ease}
 
 /* ---------- Dabloons (cooled / on hold) ---------- */
 .held{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:32px 72px; align-items:start}
@@ -543,89 +486,86 @@ footer{
   <div class="wrap">
     <div class="head">
       <h2 data-i18n="games.h2">8 shipped prototypes — plus Math Mobs Arena.</h2>
-      <div class="lede">
-        <p data-i18n="games.sub">Math Mobs Arena is live in closed testing on Google Play. The rest are free to play in-browser.</p>
-        <p class="forge-howto"><span data-i18n="forge.howto">Each cover starts as cold iron. Press and hold one to heat it until it's forged.</span> <button type="button" class="linkish" id="forge-all" data-i18n="forge.all">Reveal all covers</button></p>
-      </div>
+      <p class="lede" data-i18n="games.sub">Math Mobs Arena is live in closed testing on Google Play. The rest are free to play in-browser.</p>
     </div>
 
     <div class="games">
-      <article class="game" data-g="0">
-        <button class="shot" type="button" data-title="Math Mobs Arena"><img src="assets/math-mobs-arena.png" alt="Math Mobs Arena" loading="lazy" draggable="false"><span class="glow" aria-hidden="true"></span><span class="forge-hint" aria-hidden="true"><i class="px"></i><span data-i18n="forge.hint">Hold to forge</span></span><span class="fill" aria-hidden="true"></span></button>
+      <a class="game" href="https://play.google.com/apps/test/com.EmberBlast.MathMobs/2" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/math-mobs-arena.png" alt="Math Mobs Arena" loading="lazy"></div>
         <h3>Math Mobs Arena</h3>
         <p class="role" data-i18n="g9.role">Role: solo design &amp; Unity development — AI-assisted, human-directed</p>
         <p class="award"><i class="px"></i><span data-i18n="g9.badge">In closed testing on Google Play</span></p>
         <p class="desc" data-i18n="g9.desc">A math battler for kids: solve equations mid-fight to defeat monster mobs. Free Kenney assets and some AI-generated UI — built with Claude Code in Unity under full human direction, already playtested with real kids.</p>
-        <p class="meta"><span data-i18n="g9.tag">Educational, gamification</span><a class="go" href="https://play.google.com/apps/test/com.EmberBlast.MathMobs/2" target="_blank" rel="noopener"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></a></p>
-      </article>
+        <p class="meta"><span data-i18n="g9.tag">Educational, gamification</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
+      </a>
 
-      <article class="game" data-g="1">
-        <button class="shot" type="button" data-title="Home Bots"><img src="assets/home-bots.png" alt="Home Bots" loading="lazy" draggable="false"><span class="glow" aria-hidden="true"></span><span class="forge-hint" aria-hidden="true"><i class="px"></i><span data-i18n="forge.hint">Hold to forge</span></span><span class="fill" aria-hidden="true"></span></button>
+      <a class="game" href="https://emberblast.itch.io/home-bots" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/home-bots.png" alt="Home Bots" loading="lazy"></div>
         <h3>Home Bots</h3>
         <p class="role" data-i18n="g1.role">Role: solo design &amp; Unity development</p>
         <p class="award"><i class="px"></i><span data-i18n="g1.badge">Winner, Festival Gamer de las Flores (national TV)</span></p>
         <p class="desc" data-i18n="g1.desc">Draw routes for autonomous home robots; avoid collisions and reach the destination with the least damage possible.</p>
-        <p class="meta"><span data-i18n="g1.tag">Puzzle, indirect control</span><a class="go" href="https://emberblast.itch.io/home-bots" target="_blank" rel="noopener"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></a></p>
-      </article>
+        <p class="meta"><span data-i18n="g1.tag">Puzzle, indirect control</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
+      </a>
 
-      <article class="game" data-g="2">
-        <button class="shot" type="button" data-title="El Ritual"><img src="assets/el-ritual.png" alt="El Ritual" loading="lazy" draggable="false"><span class="glow" aria-hidden="true"></span><span class="forge-hint" aria-hidden="true"><i class="px"></i><span data-i18n="forge.hint">Hold to forge</span></span><span class="fill" aria-hidden="true"></span></button>
+      <a class="game" href="https://emberblast.itch.io/el-ritual" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/el-ritual.png" alt="El Ritual" loading="lazy"></div>
         <h3>El Ritual</h3>
         <p class="role" data-i18n="g2.role">Role: solo design &amp; Unity development — game jam</p>
         <p class="award"><i class="px"></i><span data-i18n="g2.badge">Live-reviewed on stream by Alva Majo — approved</span></p>
         <p class="desc" data-i18n="g2.desc">2D action game where time is the resource: speeding up spells ages the wizard until death.</p>
-        <p class="meta"><span data-i18n="g2.tag">Action, pixel art</span><a class="go" href="https://emberblast.itch.io/el-ritual" target="_blank" rel="noopener"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></a></p>
-      </article>
+        <p class="meta"><span data-i18n="g2.tag">Action, pixel art</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
+      </a>
 
-      <article class="game" data-g="3">
-        <button class="shot" type="button" data-title="Path Wizard"><img src="assets/path-wizard.png" alt="Path Wizard" loading="lazy" draggable="false"><span class="glow" aria-hidden="true"></span><span class="forge-hint" aria-hidden="true"><i class="px"></i><span data-i18n="forge.hint">Hold to forge</span></span><span class="fill" aria-hidden="true"></span></button>
+      <a class="game" href="https://emberblast.itch.io/path-wizard" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/path-wizard.png" alt="Path Wizard" loading="lazy"></div>
         <h3>Path Wizard</h3>
         <p class="role" data-i18n="g3.role">Role: solo design &amp; Unity development — game jam</p>
         <p class="award"><i class="px"></i><span data-i18n="g3.badge">Featured on the Kenney Jam 2021 cover</span></p>
         <p class="desc" data-i18n="g3.desc">A cozy wizard who reshapes terrain, teleports, and guides travelers to their destination without running out of mana.</p>
-        <p class="meta"><span data-i18n="g3.tag">Puzzle, cozy</span><a class="go" href="https://emberblast.itch.io/path-wizard" target="_blank" rel="noopener"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></a></p>
-      </article>
+        <p class="meta"><span data-i18n="g3.tag">Puzzle, cozy</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
+      </a>
 
-      <article class="game" data-g="4">
-        <button class="shot" type="button" data-title="Pool Crown"><img src="assets/pool-crown.png" alt="Pool Crown" loading="lazy" draggable="false"><span class="glow" aria-hidden="true"></span><span class="forge-hint" aria-hidden="true"><i class="px"></i><span data-i18n="forge.hint">Hold to forge</span></span><span class="fill" aria-hidden="true"></span></button>
+      <a class="game" href="https://emberblast.itch.io/pool-crown" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/pool-crown.png" alt="Pool Crown" loading="lazy"></div>
         <h3>Pool Crown</h3>
         <p class="role" data-i18n="g4.role">Role: solo design &amp; Unity development — game jam</p>
         <p class="award"><i class="px"></i><span data-i18n="g4.badge">1st place, Great Summer Game Jam 2021</span></p>
         <p class="desc" data-i18n="g4.desc">Survive 3 minutes without getting wet. One rule, instantly playable — no metagame required.</p>
-        <p class="meta"><span data-i18n="g4.tag">Arcade shooter</span><a class="go" href="https://emberblast.itch.io/pool-crown" target="_blank" rel="noopener"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></a></p>
-      </article>
+        <p class="meta"><span data-i18n="g4.tag">Arcade shooter</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
+      </a>
 
-      <article class="game" data-g="5">
-        <button class="shot" type="button" data-title="Graveyard Scavenger"><img src="assets/graveyard-scavenger.png" alt="Graveyard Scavenger" loading="lazy" draggable="false"><span class="glow" aria-hidden="true"></span><span class="forge-hint" aria-hidden="true"><i class="px"></i><span data-i18n="forge.hint">Hold to forge</span></span><span class="fill" aria-hidden="true"></span></button>
+      <a class="game" href="https://emberblast.itch.io/graveyard-scavenger" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/graveyard-scavenger.png" alt="Graveyard Scavenger" loading="lazy"></div>
         <h3>Graveyard Scavenger</h3>
         <p class="role" data-i18n="g5.role">Role: solo design &amp; Unity development — game jam</p>
         <p class="desc" data-i18n="g5.desc">Arrows exist in the world: pick them up off the ground or deflect them with your sword mid-combat.</p>
-        <p class="meta"><span data-i18n="g5.tag">Action, top-down</span><a class="go" href="https://emberblast.itch.io/graveyard-scavenger" target="_blank" rel="noopener"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></a></p>
-      </article>
+        <p class="meta"><span data-i18n="g5.tag">Action, top-down</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
+      </a>
 
-      <article class="game" data-g="6">
-        <button class="shot" type="button" data-title="The Plague Doctor"><img src="assets/plague-doctor.png" alt="The Plague Doctor" loading="lazy" draggable="false"><span class="glow" aria-hidden="true"></span><span class="forge-hint" aria-hidden="true"><i class="px"></i><span data-i18n="forge.hint">Hold to forge</span></span><span class="fill" aria-hidden="true"></span></button>
+      <a class="game" href="https://emberblast.itch.io/the-plague-doctor" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/plague-doctor.png" alt="The Plague Doctor" loading="lazy"></div>
         <h3>The Plague Doctor</h3>
         <p class="role" data-i18n="g6.role">Role: solo design &amp; Unity development</p>
         <p class="desc" data-i18n="g6.desc">A plague turns everyone it infects aggressive. The player is the doctor sent to contain it.</p>
-        <p class="meta"><span data-i18n="g6.tag">Action, pixel art</span><a class="go" href="https://emberblast.itch.io/the-plague-doctor" target="_blank" rel="noopener"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></a></p>
-      </article>
+        <p class="meta"><span data-i18n="g6.tag">Action, pixel art</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
+      </a>
 
-      <article class="game" data-g="7">
-        <button class="shot" type="button" data-title="Sails of Freedom"><img src="assets/sails-of-freedom.jpg" alt="Sails of Freedom" loading="lazy" draggable="false"><span class="glow" aria-hidden="true"></span><span class="forge-hint" aria-hidden="true"><i class="px"></i><span data-i18n="forge.hint">Hold to forge</span></span><span class="fill" aria-hidden="true"></span></button>
+      <a class="game" href="https://emberblast.itch.io/sails-of-freedom" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/sails-of-freedom.jpg" alt="Sails of Freedom" loading="lazy"></div>
         <h3>Sails of Freedom</h3>
         <p class="role" data-i18n="g7.role">Role: solo design &amp; Unity development — 1-week challenge</p>
         <p class="desc" data-i18n="g7.desc">3D voxel game made in one week (1 Game 1 Week): Katla escapes pirates alongside his brother.</p>
-        <p class="meta"><span data-i18n="g7.tag">Action, voxel</span><a class="go" href="https://emberblast.itch.io/sails-of-freedom" target="_blank" rel="noopener"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></a></p>
-      </article>
+        <p class="meta"><span data-i18n="g7.tag">Action, voxel</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
+      </a>
 
-      <article class="game" data-g="8">
-        <button class="shot" type="button" data-title="Dawn of Rektwood"><img src="assets/dawn-of-rektwood.jpg" alt="Dawn Of Rektwood" loading="lazy" draggable="false"><span class="glow" aria-hidden="true"></span><span class="forge-hint" aria-hidden="true"><i class="px"></i><span data-i18n="forge.hint">Hold to forge</span></span><span class="fill" aria-hidden="true"></span></button>
+      <a class="game" href="https://emberblast.itch.io/dawn-of-rektwood" target="_blank" rel="noopener">
+        <div class="shot"><img src="assets/dawn-of-rektwood.jpg" alt="Dawn Of Rektwood" loading="lazy"></div>
         <h3>Dawn of Rektwood</h3>
         <p class="role" data-i18n="g8.role">Role: game design &amp; Unity development (team of 3 — 2 friends on graphics &amp; animation)</p>
         <p class="desc" data-i18n="g8.desc">2D tower defense: guardian spirits defend the Rektwood forest from a mechanical invasion.</p>
-        <p class="meta"><span data-i18n="g8.tag">Strategy, tower defense</span><a class="go" href="https://emberblast.itch.io/dawn-of-rektwood" target="_blank" rel="noopener"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></a></p>
-      </article>
+        <p class="meta"><span data-i18n="g8.tag">Strategy, tower defense</span><span class="go"><span data-i18n="common.play">Play</span><svg class="i"><use href="#i-out"/></svg></span></p>
+      </a>
     </div>
   </div>
 </section>
@@ -793,9 +733,6 @@ footer{
   </div>
 </footer>
 
-<button class="forge-hud" id="forge-hud" type="button" aria-label="Forged games"><span class="pips" id="forge-pips" aria-hidden="true"></span><span id="forge-count">0/9</span><span data-i18n="forge.hud" id="forge-hud-label">forged</span></button>
-<div class="forge-toast" id="forge-toast" hidden role="status" aria-live="polite"><i class="px"></i><div><small data-i18n="forge.toastSmall">Forge complete</small><span data-i18n="forge.toast">All 9 games forged. The embers of the name now burn white-hot.</span></div></div>
-
 <script>
 var I18N = {
   en: {
@@ -858,9 +795,7 @@ var I18N = {
     "col2.h":"Development", "col2.li1":"Unity (URP, Addressables, ScriptableObjects, Animator, Timeline)", "col2.li2":"Unreal Engine 5 (Blueprints, C++)", "col2.li3":"C#, C++, TypeScript", "col2.li4":"Mobile iOS/Android, WebGL, VR/XR (HTC Vive)", "col2.li5":"SOLID, Modular Architecture",
     "col3.h":"Production & AI", "col3.li1":"Claude Code, MCP workflows", "col3.li2":"Prompt engineering, LLM tooling", "col3.li3":"Git/GitHub, Jira, Trello, Figma", "col3.li4":"Scrum / Agile, team leadership", "col3.li5":"Living technical documentation",
     "footer.h2":"Let's build something playable.", "footer.cta":"Send an email",
-    "footer.copy":"EmberBlast — Jose David Yepes Arango. Portfolio updated 2026.",
-    "forge.hint":"Hold to forge", "forge.howto":"Each cover starts as cold iron. Press and hold one to heat it until it's forged.", "forge.all":"Reveal all covers",
-    "forge.hud":"forged", "forge.hudDone":"Forge complete", "forge.toastSmall":"Forge complete", "forge.toast":"All 9 games forged. The embers of the name now burn white-hot."
+    "footer.copy":"EmberBlast — Jose David Yepes Arango. Portfolio updated 2026."
   },
   es: {
     "nav.games":"Juegos", "nav.about":"Sobre mí", "nav.exp":"Experiencia", "nav.skills":"Habilidades", "nav.contact":"Contacto",
@@ -922,9 +857,7 @@ var I18N = {
     "col2.h":"Desarrollo", "col2.li1":"Unity (URP, Addressables, ScriptableObjects, Animator, Timeline)", "col2.li2":"Unreal Engine 5 (Blueprints, C++)", "col2.li3":"C#, C++, TypeScript", "col2.li4":"Mobile iOS/Android, WebGL, VR/XR (HTC Vive)", "col2.li5":"SOLID, arquitectura modular",
     "col3.h":"Producción e IA", "col3.li1":"Claude Code, MCP workflows", "col3.li2":"Prompt engineering, tooling con LLMs", "col3.li3":"Git/GitHub, Jira, Trello, Figma", "col3.li4":"Scrum / Agile, liderazgo de equipo", "col3.li5":"Documentación técnica viva",
     "footer.h2":"¿Construimos algo jugable?", "footer.cta":"Escribir un correo",
-    "footer.copy":"EmberBlast — Jose David Yepes Arango. Portafolio actualizado 2026.",
-    "forge.hint":"Mantén para forjar", "forge.howto":"Cada portada empieza como hierro frío. Mantén una presionada para calentarla hasta forjarla.", "forge.all":"Revelar todas las portadas",
-    "forge.hud":"forjados", "forge.hudDone":"Forja completa", "forge.toastSmall":"Forja completa", "forge.toast":"Los 9 juegos están forjados. Las brasas del nombre ahora arden al blanco."
+    "footer.copy":"EmberBlast — Jose David Yepes Arango. Portafolio actualizado 2026."
   }
 };
 
@@ -957,116 +890,6 @@ function applyLang(lang){
   });
 })();
 
-/* ================= Forge layer: forge each game cover =================
-   Pure presentation: every title, role, award, description and link is
-   readable without it. Hold a cover to heat it (slow, deliberate); let go and
-   it cools fast. At full heat it is struck, quenched and shows in colour. */
-(function(){
-  var KEY = 'eb_forged', HOLD = .9, COOL = .28;
-  var RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var forged = {};
-  try{ JSON.parse(localStorage.getItem(KEY) || '[]').forEach(function(i){ forged[i] = 1; }); }catch(e){}
-  var games = [].slice.call(document.querySelectorAll('.game'));
-  var hud = document.getElementById('forge-hud'), pips = document.getElementById('forge-pips');
-  var countEl = document.getElementById('forge-count'), label = document.getElementById('forge-hud-label');
-  var toastEl = document.getElementById('forge-toast'), allBtn = document.getElementById('forge-all');
-  var total = games.length;
-  function n(){ return Object.keys(forged).length; }
-  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(Object.keys(forged).map(Number))); }catch(e){} }
-  function lang(){ return document.documentElement.lang === 'es' ? 'es' : 'en'; }
-  function t(k){ return (I18N[lang()] && I18N[lang()][k]) || I18N.en[k]; }
-  function renderHud(){
-    var h = ''; for(var i=0;i<total;i++) h += '<i class="'+(forged[i]?'on':'')+'"></i>';
-    pips.innerHTML = h; countEl.textContent = n() + '/' + total;
-    var done = n() >= total;
-    hud.classList.toggle('done', done);
-    label.setAttribute('data-i18n', done ? 'forge.hudDone' : 'forge.hud'); label.textContent = t(done ? 'forge.hudDone' : 'forge.hud');
-    if(done) countEl.textContent = '';
-    allBtn.hidden = done;
-  }
-  document.querySelectorAll('.lang button').forEach(function(b){ b.addEventListener('click', function(){ setTimeout(renderHud, 0); }); });
-
-  function complete(){
-    if(window.forgeMaster) window.forgeMaster(true);
-    toastEl.hidden = false; setTimeout(function(){ toastEl.hidden = true; }, 4200);
-  }
-  function setForged(g, i, fx){
-    forged[i] = 1; g.classList.add('forged'); save();
-    var shot = g.querySelector('.shot');
-    shot.setAttribute('aria-label', shot.getAttribute('data-title') + ' — forged');
-    shot.style.setProperty('--heat', 0);
-    if(fx){
-      g.classList.add('just'); setTimeout(function(){ g.classList.remove('just'); }, 1300);
-      if(!RM){ sparks(shot); steam(shot); }
-      try{ navigator.vibrate && navigator.vibrate(18); }catch(e){}
-    }
-    renderHud();
-    if(fx && n() >= total) complete();
-  }
-  function sparks(el){
-    var r = el.getBoundingClientRect(), cx = r.left + r.width/2, cy = r.top + r.height*.62;
-    for(var i=0;i<22;i++){
-      var s = document.createElement('i'); s.className = 'forge-spark';
-      s.style.left = cx + 'px'; s.style.top = cy + 'px'; document.body.appendChild(s);
-      var a = -Math.PI/2 + (Math.random()-.5)*2.6, d = 50 + Math.random()*140, sz = Math.random() < .3 ? 6 : 3;
-      s.style.width = s.style.height = sz + 'px';
-      s.animate([
-        {transform:'translate(0,0)', opacity:1},
-        {transform:'translate('+(Math.cos(a)*d)+'px,'+(Math.sin(a)*d + 70)+'px)', opacity:0}
-      ], {duration:600 + Math.random()*400, easing:'cubic-bezier(0.23,1,0.32,1)'}).onfinish = (function(x){ return function(){ x.remove(); }; })(s);
-    }
-  }
-  function steam(el){
-    for(var i=0;i<10;i++){
-      var s = document.createElement('i'); s.className = 'steam';
-      s.style.left = (10 + Math.random()*80) + '%'; s.style.top = (55 + Math.random()*30) + '%'; el.appendChild(s);
-      s.animate([
-        {transform:'translateY(0) scale(1)', opacity:0},
-        {transform:'translateY(-14px) scale(1.4)', opacity:.7, offset:.25},
-        {transform:'translateY(-60px) scale(2.4)', opacity:0}
-      ], {duration:1100 + Math.random()*500, delay:120 + Math.random()*200, easing:'ease-out', fill:'both'}).onfinish = (function(x){ return function(){ x.remove(); }; })(s);
-    }
-  }
-
-  games.forEach(function(g){
-    var i = +g.getAttribute('data-g'), shot = g.querySelector('.shot');
-    var heat = 0, holding = false, raf = 0, last = 0;
-    shot.setAttribute('aria-label', shot.getAttribute('data-title') + (forged[i] ? ' — forged' : ' — hold to forge'));
-    if(forged[i]){ g.classList.add('forged'); return; }
-    function loop(now){
-      raf = 0; now /= 1000; var dt = Math.min(.05, now - (last || now)); last = now;
-      if(g.classList.contains('forged')) return;
-      heat += holding ? dt/HOLD : -dt/COOL;
-      if(heat >= 1){ heat = 1; holding = false; shot.classList.remove('hot'); setForged(g, i, true); return; }
-      if(heat <= 0 && !holding){ heat = 0; shot.style.setProperty('--heat', 0); return; }
-      if(heat < 0) heat = 0;
-      shot.style.setProperty('--heat', heat.toFixed(3));
-      raf = requestAnimationFrame(loop);
-    }
-    function start(){ if(g.classList.contains('forged')) return; holding = true; shot.classList.add('hot'); if(!raf){ last = 0; raf = requestAnimationFrame(loop); } }
-    function stop(){ holding = false; shot.classList.remove('hot'); if(!raf && heat > 0){ last = 0; raf = requestAnimationFrame(loop); } }
-    shot.addEventListener('pointerdown', function(e){ if(e.button > 0) return; start(); });
-    ['pointerup','pointerleave','pointercancel'].forEach(function(ev){ shot.addEventListener(ev, stop); });
-    shot.addEventListener('contextmenu', function(e){ if(!g.classList.contains('forged')) e.preventDefault(); });
-    shot.addEventListener('keydown', function(e){ if((e.key === ' ' || e.key === 'Enter') && !e.repeat){ e.preventDefault(); start(); } });
-    shot.addEventListener('keyup', function(e){ if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); stop(); } });
-    shot.addEventListener('click', function(e){ e.preventDefault(); });
-  });
-
-  allBtn.addEventListener('click', function(){
-    games.forEach(function(g){ var i = +g.getAttribute('data-g'); if(!forged[i]) setForged(g, i, false); });
-    if(window.forgeMaster) window.forgeMaster(true);
-  });
-  hud.addEventListener('click', function(){ document.getElementById('juegos').scrollIntoView({behavior: RM ? 'auto' : 'smooth'}); });
-
-  /* the pill appears once the visitor reaches the games, and stays */
-  var sec = document.getElementById('juegos');
-  if('IntersectionObserver' in window){
-    new IntersectionObserver(function(es, ob){ if(es[0].isIntersecting){ hud.classList.add('show'); ob.disconnect(); } }, {rootMargin:'0px 0px -30% 0px'}).observe(sec);
-  } else hud.classList.add('show');
-  renderHud();
-})();
-
 /* ================= The forge =================
    The name is sampled from the real <h1> layout into a grid of square embers.
    Embers rise from below and lock into the letters, then smoulder. The pointer
@@ -1088,8 +911,6 @@ function applyLang(lang){
   var W = 0, H = 0, N = 0, cell = 4, sq = 3;
   var X, Y, VX, VY, HX, HY, HEAT, SX, SY, DEL, SEED, PH;
   var t0 = 0, last = 0, raf = 0, visible = true, built = false, interacted = false;
-  var master = 0; window.forgeMaster = function(on){ master = on ? 1 : 0; schedule(); };
-  try{ if(JSON.parse(localStorage.getItem('eb_forged') || '[]').length >= 9) master = 1; }catch(e){}
   var mx = -9999, my = -9999, mActive = 0, lastMove = 0;
 
   /* heat ramp: char → deep red → ember → flame → white-hot */
@@ -1216,7 +1037,7 @@ function applyLang(lang){
       }
       if(PH[i] === 1){
         /* smoulder: a slow travelling glow across the letters */
-        var target = .5 + master*.2 + .13*Math.sin(HX[i]*.019 + t*.85)*Math.sin(HY[i]*.023 - t*.6) + .07*Math.sin(t*2.6 + SEED[i]);
+        var target = .5 + .13*Math.sin(HX[i]*.019 + t*.85)*Math.sin(HY[i]*.023 - t*.6) + .07*Math.sin(t*2.6 + SEED[i]);
         var ax = (HX[i]-X[i])*46 - VX[i]*8.5;
         var ay = (HY[i]-Y[i])*46 - VY[i]*8.5;
         if(pOn){
